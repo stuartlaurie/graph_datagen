@@ -1,12 +1,19 @@
 # Data Generation
 
+Tool to generate sample graphs for Neo4j - mostly used to synthesize large graphs for testing.
+
 Sample Graph can be generated using [generate_data.py](./datagen/generate_data.py)
 
 ```
-python3 generate_data.py -u 280737632 -f 1547592072 -d twitter300m
+python3 generate_data.py examples/social-datagen.conf
 ```
 
-This generates will generate CSV and an importCommand.sh script that can be used to load the data via neo4j-admin import
+This will generate node and relationship files and output to either:
 
-* -u specifies the # of Users
-* -f specifies the # FOLLOWS relationship types
+* csv
+* gzip
+* parquet (useful for direct graph build via Graph Data Science Library)
+
+If csv or gzip are selected then header files and an importCommand.sh script will be generated that can be run to import via neo4j-admin.
+
+Configuration is done via the yaml file

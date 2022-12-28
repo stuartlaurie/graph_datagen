@@ -2,3 +2,4 @@ __pycache__
 DATA*
 neo4j-enterprise*
 import.report
+.DS_Store
