@@ -39,6 +39,7 @@ def commandlineOptions(name, argv):
             no_rels = int("50,000".replace(",",""))
             records_per_file = int("200,000".replace(",",""))
             database = 'social'
+            output_format = 'CSV'
 
 
     print ('Number Concurrent Processes: ' + str(processes))
