@@ -10,13 +10,13 @@ def create_node_header(data_dir,node_label):
     with open(filename, 'w', newline='') as node_headers:
         csv_writer = csv.writer(node_headers)
         csv_writer.writerow([
-            'id:ID(User)',
+            'id:ID('+node_label+')',
         #    'ageGroup','gender','country'
         ])
 
     return filename
 
-def create_node_data(filename, start_id, no_nodes, label, output_format):
+def create_node_data(filename, output_format, start_id, no_nodes, label):
 
     ## randomly generate node data
     data = []

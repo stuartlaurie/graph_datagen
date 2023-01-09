@@ -4,26 +4,26 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-def create_rel_header(data_dir, rel_label):
-    filename=data_dir+"/"+rel_label+"RelHeaders.csv"
+def create_rel_header(data_dir, rel_config):
+    filename=data_dir+"/"+rel_config['label']+"RelHeaders.csv"
 
     with open(filename, 'w', newline='') as rel_headers:
         csv_writer = csv.writer(rel_headers)
         csv_writer.writerow([
-            ':START_ID(User)',
-            ':END_ID(User)',
+            ':START_ID('+rel_config['source_node_label']+')',
+            ':END_ID('+rel_config['target_node_label']+')',
             'date:date'
         ])
 
     return filename
 
-def create_rel_data(filename, start_id, no_rels, total_rels, label, no_nodes, start_label, output_format):
+def create_rel_data(filename, output_format, start_id, no_rels, label, config, nodelabelcount):
 
     data = []
     for i in range(start_id, start_id+no_rels):
 
-        start_node=start_label+str(random.randint(1,no_nodes))
-        end_node=start_label+str(random.randint(1,no_nodes))
+        start_node=config['source_node_label']+str(random.randint(1,nodelabelcount[config['source_node_label']]))
+        end_node=config['target_node_label']+str(random.randint(1,nodelabelcount[config['target_node_label']]))
 
         day=str(random.randint(1,29)).zfill(2)
         date="2020-06-"+day
