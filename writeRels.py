@@ -1,36 +1,47 @@
-import csv
 import random
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
+import datetime
+from helpers import *
+from faker import Faker
+fake = Faker()
 
-def create_rel_header(data_dir, rel_config):
-    filename=data_dir+"/"+rel_config['label']+"RelHeaders.csv"
+def create_rel_header(data_dir, config):
+    filename=data_dir+"/"+config['label']+"RelHeaders.csv"
 
-    with open(filename, 'w', newline='') as rel_headers:
-        csv_writer = csv.writer(rel_headers)
-        csv_writer.writerow([
-            ':START_ID('+rel_config['source_node_label']+')',
-            ':END_ID('+rel_config['target_node_label']+')',
-            'date:date'
-        ])
+    header=[
+        ':START_ID('+config['source_node_label']+')',
+        ':END_ID('+config['target_node_label']+')',
+    ]
+    filename=writeImportHeader(filename,header,config)
 
     return filename
 
 def create_rel_data(filename, output_format, start_id, no_rels, label, config, nodelabelcount):
 
     data = []
+
     for i in range(start_id, start_id+no_rels):
 
-        start_node=config['source_node_label']+str(random.randint(1,nodelabelcount[config['source_node_label']]))
-        end_node=config['target_node_label']+str(random.randint(1,nodelabelcount[config['target_node_label']]))
+        list = []
+        list.append(config['source_node_label']+str(random.randint(1,nodelabelcount[config['source_node_label']])))
+        list.append(config['target_node_label']+str(random.randint(1,nodelabelcount[config['target_node_label']])))
 
-        day=str(random.randint(1,29)).zfill(2)
-        date="2020-06-"+day
+        ## check efficiency - generate list first then pull values?
+        if "properties" in config:
+            for properties in config['properties']:
+                if properties['type'] == 'date':
+                    start_date=datetime.date(year=properties['lower']['year'], month=properties['lower']['month'], day=properties['lower']['day'])
+                    end_date=datetime.date(year=properties['upper']['year'], month=properties['upper']['month'], day=properties['upper']['day'])
+                    list.append(fake.date_between(start_date=start_date, end_date=end_date))
+                if properties['type'] == 'int':
+                    list.append(random.randint(properties['lower'],properties['upper']))
 
-        data.append([start_node,end_node,date])
+        data.append(list)
 
-    df = pd.DataFrame(data, columns=['START_ID','END_ID','DATE'])
+    column_header=setColumnHeader(['START_ID','END_ID'],config)
+    df = pd.DataFrame(data, columns=column_header)
 
     if (output_format == "parquet"):
         table = pa.Table.from_pandas(df)

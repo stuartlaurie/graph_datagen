@@ -10,46 +10,6 @@ import time
 
 config = dict()
 
-def nodes(work_data):
-    ## work_data = i, filename, output_format, start_id, no_nodes, label
-    inner_start=time.time()
-    create_node_data(work_data[1],work_data[2],work_data[3],work_data[4],work_data[5])
-    inner_end=time.time()
-    print("Process: " + str(work_data[0]) + ", finished generating: "+ str(work_data[4]) + " data in " + str((inner_end - inner_start)) + " seconds", flush=True)
-
-def rels(work_data):
-    ## work_data = i, filename, output_format, start_id, no_rels, total_rels, label, config, nodelabelcount
-    inner_start=time.time()
-    create_rel_data(work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6],work_data[7])
-    inner_end=time.time()
-    print("Process: " + str(work_data[0]) + ", finished generating: "+ str(work_data[4]) + " " + " data in " + str((inner_end - inner_start)) + " seconds", flush=True)
-
-
-def create_adminimport_command(nodefiles,relfiles,config):
-    loadCommand=open(base_dir+'/importCommand.sh', 'w', newline='')
-
-    if 'neo4j' in config.keys() and config['neo4j']['recreate_db'] == True:
-        loadCommand.write("echo \"DROP DATABASE "+ config['database'] + "\" | " + config['path'] + "cypher-shell -u " + config['neo4j']['username'] + " -p " + config['neo4j']['password'] + "\n")
-
-    loadCommand.write(config['path'] + config['cmd'])
-    loadCommand.write(" \\\n")
-
-    for key, value in config['options'].items():
-        loadCommand.write("  --"+key+"=" + str(value) + " \\\n")
-
-    for key, value in nodefiles.items():
-        loadCommand.write("  --nodes="+key+"=" + ','.join(value) + " \\\n")
-
-    for key, value in relfiles.items():
-        loadCommand.write("  --relationships="+key+"=" + ','.join(value) + " \\\n")
-
-    loadCommand.write(" " + config['database']+ " \n")
-
-    if 'neo4j' in config.keys() and config['neo4j']['recreate_db'] == True:
-        loadCommand.write("echo \"CREATE DATABASE "+ config['database'] + "\" | " + config['path'] + "cypher-shell -u " + config['neo4j']['username'] + " -p " + config['neo4j']['password'] + "\n")
-
-    loadCommand.close()
-
 def create_output_dir(data_dir):
     print("Creating output directory: " + data_dir)
     if not os.path.exists(data_dir):
@@ -60,6 +20,20 @@ def create_filename(data_dir,prefix,id,output_format):
     ## Create Data files
     filename=os.path.join("./"+data_dir, prefix+str(id)+"."+output_format)
     return filename
+
+def nodes(work_data):
+    ## work_data = i, filename, output_format, start_id, no_nodes, label, config
+    inner_start=time.time()
+    create_node_data(work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6])
+    inner_end=time.time()
+    print("Process: " + str(work_data[0]) + ", finished generating: "+ str(work_data[4]) + " data in " + str((inner_end - inner_start)) + " seconds", flush=True)
+
+def rels(work_data):
+    ## work_data = i, filename, output_format, start_id, no_rels, total_rels, label, config, nodelabelcount
+    inner_start=time.time()
+    create_rel_data(work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6],work_data[7])
+    inner_end=time.time()
+    print("Process: " + str(work_data[0]) + ", finished generating: "+ str(work_data[4]) + " " + " data in " + str((inner_end - inner_start)) + " seconds", flush=True)
 
 def calculate_work_split(config,records_per_file,data_dir,output_format,nodelabelcount):
     ## config, records_per_file, data_dir, output_format
@@ -104,6 +78,31 @@ def node_pool(processes):
 def rel_pool(processes):
     with Pool(processes) as relPool:
         relPool.map(rels, work)
+
+def create_adminimport_command(nodefiles,relfiles,config):
+    loadCommand=open(base_dir+'/importCommand.sh', 'w', newline='')
+
+    if 'neo4j' in config.keys() and config['neo4j']['recreate_db'] == True:
+        loadCommand.write("echo \"DROP DATABASE "+ config['database'] + "\" | " + config['path'] + "cypher-shell -u " + config['neo4j']['username'] + " -p " + config['neo4j']['password'] + "\n")
+
+    loadCommand.write(config['path'] + config['cmd'])
+    loadCommand.write(" \\\n")
+
+    for key, value in config['options'].items():
+        loadCommand.write("  --"+key+"=" + str(value) + " \\\n")
+
+    for key, value in nodefiles.items():
+        loadCommand.write("  --nodes="+key+"=" + ','.join(value) + " \\\n")
+
+    for key, value in relfiles.items():
+        loadCommand.write("  --relationships="+key+"=" + ','.join(value) + " \\\n")
+
+    loadCommand.write(" " + config['database']+ " \n")
+
+    if 'neo4j' in config.keys() and config['neo4j']['recreate_db'] == True:
+        loadCommand.write("echo \"CREATE DATABASE "+ config['database'] + "\" | " + config['path'] + "cypher-shell -u " + config['neo4j']['username'] + " -p " + config['neo4j']['password'] + "\n")
+
+    loadCommand.close()
 
 def load_config(configuration):
     global config
@@ -151,7 +150,7 @@ if __name__ == '__main__':
         node_generation_end=time.time()
 
         if output_format != "parquet":
-            header_file=create_node_header(base_dir,nodeconfig['label'])
+            header_file=create_node_header(base_dir,nodeconfig)
             import_node_config[nodeconfig['label']]=[header_file]+[data_dir+"/.*"] ## use node_files for all filenames
 
 
