@@ -28,7 +28,7 @@ def rels(work_data):
 def create_adminimport_command(nodefiles,relfiles,config):
     loadCommand=open(base_dir+'/importCommand.sh', 'w', newline='')
 
-    if config['neo4j']['recreate_db'] == True:
+    if 'neo4j' in config.keys() and config['neo4j']['recreate_db'] == True:
         loadCommand.write("echo \"DROP DATABASE "+ config['database'] + "\" | " + config['path'] + "cypher-shell -u " + config['neo4j']['username'] + " -p " + config['neo4j']['password'] + "\n")
 
     loadCommand.write(config['path'] + config['cmd'])
@@ -45,7 +45,7 @@ def create_adminimport_command(nodefiles,relfiles,config):
 
     loadCommand.write(" " + config['database']+ " \n")
 
-    if config['neo4j']['recreate_db'] == True:
+    if 'neo4j' in config.keys() and config['neo4j']['recreate_db'] == True:
         loadCommand.write("echo \"CREATE DATABASE "+ config['database'] + "\" | " + config['path'] + "cypher-shell -u " + config['neo4j']['username'] + " -p " + config['neo4j']['password'] + "\n")
 
     loadCommand.close()
