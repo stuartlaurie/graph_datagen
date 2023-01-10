@@ -3,7 +3,11 @@ import csv
 def writeImportHeader(filename,header,config):
     if "properties" in config:
         for propertyconfig in config['properties']:
-            header.append(propertyconfig['name']+":"+propertyconfig['type'])
+            if propertyconfig['type'] == 'list':
+                ## actually a string
+                header.append(propertyconfig['name'])
+            else:
+                header.append(propertyconfig['name']+":"+propertyconfig['type'])
 
     with open(filename, 'w', newline='') as headerfile:
         csv_writer = csv.writer(headerfile)

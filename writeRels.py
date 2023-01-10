@@ -37,6 +37,8 @@ def create_rel_data(filename, output_format, start_id, no_rels, label, config, n
                     list.append(fake.date_between(start_date=start_date, end_date=end_date))
                 if properties['type'] == 'int':
                     list.append(random.randint(properties['lower'],properties['upper']))
+                if properties['type'] == 'list':
+                    list.append(properties['values'][random.randint(0,len(properties['values'])-1)])                    
 
         data.append(list)
 
