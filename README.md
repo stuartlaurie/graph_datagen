@@ -77,13 +77,13 @@ will generate random int between lower and upper values
 will generate random date between lower and upper values - split down to ymd to avoid pesky US/European dates
 
 * `lower`:
--   `year`: 2022
--   `month`: 1
--   `day`: 1
+    * `year`: 2022
+    * `month`: 1
+    * `day`: 1
 * `upper`:
--   `year`: 2023
--   `month`: 1
--   `day`: 1
+    * `year`: 2023
+    * `month`: 1
+    * `day`: 1
 
 **list**
 
@@ -91,4 +91,6 @@ will randomly select a value from the list and pass to admin-import as a string
 
 * `values`: [list of values to select from]
 
-Eventually will support all valid types are as per admin-import documentation: https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/#import-tool-header-format-properties, with exception that you can specify a list as input
+### Task List
+
+* support all valid types are as per admin-import documentation: https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/#import-tool-header-format-properties
