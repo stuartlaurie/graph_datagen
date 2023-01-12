@@ -8,7 +8,7 @@ def generateProperties(row, properties):
     for property in properties:
         if property['type'] == 'int' or property['type'] == 'long' :
             row.append(np.random.randint(property['lower'],property['upper']))
-        elif property['type'] == 'float':
+        elif property['type'] == 'float' or property['type'] == 'double':
             precision='%.2f'
             if "precision" in property:
                 precision='%.'+str(property['precision'])+'f'
@@ -37,7 +37,20 @@ def generateProperties(row, properties):
             row.append("")
     return row
 
+
+def generateLabels(row, labels):
+    for label in labels:
+        if "probability" in label:
+            row.append(np.random.choice(label['values'],p=label['probability']))
+        else:
+            row.append(np.random.choice(label['values']))
+    return row
+
 def writeImportHeader(filename,header,config):
+    if "labels" in config:
+        for labelconfig in config['labels']:
+            header.append(":LABEL")
+
     if "properties" in config:
         for propertyconfig in config['properties']:
             if 'output_type' in propertyconfig:
@@ -52,6 +65,9 @@ def writeImportHeader(filename,header,config):
     return filename
 
 def setColumnHeader(header,config):
+    if "labels" in config:
+        for labelconfig in config['labels']:
+            header.append(labelconfig['name'])
     if "properties" in config:
         for propertyconfig in config['properties']:
             header.append(propertyconfig['name'])

@@ -19,6 +19,9 @@ def create_node_data(filename, output_format, start_id, no_nodes, label, config)
         list = []
         list.append(label+str(i))
 
+        if "labels" in config:
+            list=generateLabels(list,config['labels'])
+
         if "properties" in config:
             list=generateProperties(list,config['properties'])
 

@@ -47,6 +47,14 @@ Repeating section for each node to be generated, common settings
 * `label`: [label for node]
 * `no_to_generate`: [no. of nodes to generate] - supports both 1000000 and 1,000,000 formats
 
+### additional labels
+
+Repeating section for each additional label to specify, useful for e.g. generating additional occasional labels like 'flagged'
+
+* `labels`:
+    * `name`: [name for section, gets used in df column names]
+    * `values`: [list of labels to select from]
+    * `probability`: [list of probabilities for the values] - if not specified defaults to random    
 
 ### relationships
 
