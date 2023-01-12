@@ -1,11 +1,8 @@
-import random
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
-import datetime
+import random
 from helpers import *
-from faker import Faker
-fake = Faker()
 
 def create_rel_header(data_dir, config):
     filename=data_dir+"/"+config['label']+"RelHeaders.csv"
@@ -28,17 +25,8 @@ def create_rel_data(filename, output_format, start_id, no_rels, label, config, n
         list.append(config['source_node_label']+str(random.randint(1,nodelabelcount[config['source_node_label']])))
         list.append(config['target_node_label']+str(random.randint(1,nodelabelcount[config['target_node_label']])))
 
-        ## check efficiency - generate list first then pull values?
         if "properties" in config:
-            for properties in config['properties']:
-                if properties['type'] == 'date':
-                    start_date=datetime.date(year=properties['lower']['year'], month=properties['lower']['month'], day=properties['lower']['day'])
-                    end_date=datetime.date(year=properties['upper']['year'], month=properties['upper']['month'], day=properties['upper']['day'])
-                    list.append(fake.date_between(start_date=start_date, end_date=end_date))
-                if properties['type'] == 'int':
-                    list.append(random.randint(properties['lower'],properties['upper']))
-                if properties['type'] == 'list':
-                    list.append(properties['values'][random.randint(0,len(properties['values'])-1)])                    
+            list=generateProperties(list,config['properties'])
 
         data.append(list)
 

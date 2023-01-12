@@ -1,6 +1,6 @@
 __pycache__
+.DS_Store
 DATA*
 neo4j-enterprise*
 import.report
-.DS_Store
-genenv
+customer*

@@ -64,6 +64,7 @@ Each node/relationship block can have repeating properties section, properties c
 
 * `name`: [name of property]
 * `type`: [type of property] - each type has it's own set of configuration/behavior
+* `output_type`: [data type to be used in admin-import header] - used when generating e.g. email as while we want an email to be generated, the type for admin-import is string. Also applies to lists where its random selection of a value.
 
 **int**
 
@@ -87,9 +88,29 @@ will generate random date between lower and upper values - split down to ymd to 
 
 **list**
 
-will randomly select a value from the list and pass to admin-import as a string
+will randomly select a value from the list and pass to admin-import - if not string need to define type for admin-import using `output_type` field
 
 * `values`: [list of values to select from]
+
+**name**
+
+uses `fake.name()` [Faker](https://faker.readthedocs.io/en/master/index.html) function to generate random data
+
+**email**
+
+uses `fake.company_email()` [Faker](https://faker.readthedocs.io/en/master/index.html) function to generate random data
+
+**phone**
+
+uses `fake.phone_number()` [Faker](https://faker.readthedocs.io/en/master/index.html) function to generate random data
+
+**ssn**
+
+uses `fake.ssn()` [Faker](https://faker.readthedocs.io/en/master/index.html) function to generate random data
+
+**ip**
+
+uses `fake.ipv4()` [Faker](https://faker.readthedocs.io/en/master/index.html) function to generate random data
 
 ### Task List
 
