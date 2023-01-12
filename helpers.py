@@ -14,7 +14,10 @@ def generateProperties(row, properties):
                 precision='%.'+str(property['precision'])+'f'
             row.append(precision % np.random.uniform(low=property['lower'], high=property['upper'], size=None))
         elif property['type'] == 'list':
-            row.append(np.random.choice(property['values']))
+            if "probability" in property:
+                row.append(np.random.choice(property['values'],p=property['probability']))
+            else:
+                row.append(np.random.choice(property['values']))
         elif property['type'] == 'date':
             start_date=datetime.date(year=property['lower']['year'], month=property['lower']['month'], day=property['lower']['day'])
             end_date=datetime.date(year=property['upper']['year'], month=property['upper']['month'], day=property['upper']['day'])

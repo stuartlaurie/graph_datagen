@@ -99,6 +99,7 @@ will generate random date between lower and upper values - split down to ymd to 
 will randomly select a value from the list and pass to admin-import - if not string need to define type for admin-import using `output_type` field
 
 * `values`: [list of values to select from]
+* `probability`: [list of probabilities for the values] - if not specified defaults to random
 
 **name**
 
