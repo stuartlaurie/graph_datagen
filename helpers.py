@@ -6,8 +6,13 @@ fake = Faker()
 
 def generateProperties(row, properties):
     for property in properties:
-        if property['type'] == 'int':
+        if property['type'] == 'int' or property['type'] == 'long' :
             row.append(np.random.randint(property['lower'],property['upper']))
+        elif property['type'] == 'float':
+            precision='%.2f'
+            if "precision" in property:
+                precision='%.'+str(property['precision'])+'f'
+            row.append(precision % np.random.uniform(low=property['lower'], high=property['upper'], size=None))
         elif property['type'] == 'list':
             row.append(np.random.choice(property['values']))
         elif property['type'] == 'date':

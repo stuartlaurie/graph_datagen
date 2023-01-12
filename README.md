@@ -73,6 +73,14 @@ will generate random int between lower and upper values
 * `lower`: [lowest int]
 * `upper`: [highest int]
 
+**float**
+
+will generate random float between lower and upper values with no. decimal places defined by precision
+
+* `lower`: [lowest float]
+* `upper`: [highest float]
+* `precision`: [no decimal places]
+
 **date**
 
 will generate random date between lower and upper values - split down to ymd to avoid pesky US/European dates
