@@ -116,7 +116,7 @@ if __name__ == '__main__':
     load_config(configuration)
 
     ## Get general settings
-    records_per_file=config['records_per_file']
+    records_per_file=int(config['records_per_file'].replace(',',''))
     output_format=config['output_format']
     processes=multiprocessing.cpu_count() ## config['threads']
 
@@ -137,12 +137,15 @@ if __name__ == '__main__':
     ## Generate Node files
     ##############################
 
+    print("**NODE GENERATION**")
+
     for nodeconfig in config['nodes']:
 
-        nodelabelcount[nodeconfig['label']]=nodeconfig['no_to_generate']
+        nodeconfig['no_to_generate']=int(nodeconfig['no_to_generate'].replace(',','')) ## allow for string with thousand ,
+        nodelabelcount[nodeconfig['label']]=nodeconfig['no_to_generate'] ## store for lookup of valid id range for rel generation
+
         data_dir=create_output_dir(os.path.join(base_dir, nodeconfig['label']))
         work, node_files=calculate_work_split(nodeconfig, records_per_file, data_dir, output_format, nodelabelcount)
-
 
         print ("Generating " + str(nodeconfig['no_to_generate']) + " " + nodeconfig['label'] + " in: " + str((len(work))) + " jobs")
         node_generation_start=time.time()
@@ -158,8 +161,11 @@ if __name__ == '__main__':
     ## Generate Relationship files
     ##############################
 
+    print("**RELATIONSHIP GENERATION**")
 
     for relationshipconfig in config['relationships']:
+
+        relationshipconfig['no_to_generate']=int(relationshipconfig['no_to_generate'].replace(',','')) ## allow for string with thousand ,
 
         data_dir=create_output_dir(os.path.join(base_dir, relationshipconfig['label']))
         work, rel_files=calculate_work_split(relationshipconfig, records_per_file, data_dir, output_format, nodelabelcount)

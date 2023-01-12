@@ -30,7 +30,7 @@ Configuration is done via the yaml file - [here are some example configs](./exam
 ### General
 
 * general directory setup/output
-* can specify no records/file - setting this will define how many files get created as (total no./records per)
+* can specify no records/file - setting this will define how many files get created as (total no./records per) `something to play with for larger datasets` - supports both 1000000 and 1,000,000 formats
 
 
 ### admin-import
@@ -45,7 +45,7 @@ This section gives the parameters that will be written to a shell script in the 
 Repeating section for each node to be generated, common settings
 
 * `label`: [label for node]
-* `no_to_generate`: [no. of nodes to generate]
+* `no_to_generate`: [no. of nodes to generate] - supports both 1000000 and 1,000,000 formats
 
 
 ### relationships
@@ -53,7 +53,7 @@ Repeating section for each node to be generated, common settings
 Repeating section for each relationship to be generated, common settings
 
 * `label`: [label for relationship]
-* `no_to_generate`: [no. of nodes to generate]
+* `no_to_generate`: [no. of relationships to generate] - supports both 1000000 and 1,000,000 formats
 * `source_node_label`: [label of source node]
 * `target_node_label`: [User of target node]
 
