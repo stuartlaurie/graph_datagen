@@ -110,14 +110,14 @@ will generate random datetime between lower and upper values - split down to ymd
         * `year`: 2022
         * `month`: 1
         * `day`: 1
-        * `hour`: 2023
+        * `hour`: 1
         * `second`: 1
         * `minute`: 1        
     * `upper`:
         * `year`: 2023
         * `month`: 1
         * `day`: 1
-        * `hour`: 2023
+        * `hour`: 1
         * `second`: 1
         * `minute`: 1        
 
