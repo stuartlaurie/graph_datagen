@@ -19,9 +19,17 @@ def generateProperties(row, properties):
             else:
                 row.append(np.random.choice(property['values']))
         elif property['type'] == 'date':
-            start_date=datetime.date(year=property['lower']['year'], month=property['lower']['month'], day=property['lower']['day'])
-            end_date=datetime.date(year=property['upper']['year'], month=property['upper']['month'], day=property['upper']['day'])
+            start_date=datetime.datetime(year=property['lower']['year'], month=property['lower']['month'], day=property['lower']['day'])
+            end_date=datetime.datetime(year=property['upper']['year'], month=property['upper']['month'], day=property['upper']['day'])
             row.append(fake.date_between(start_date=start_date, end_date=end_date))
+        elif property['type'] == 'datetime' or property['type'] == 'epoch':
+            start_date=datetime.datetime(year=property['lower']['year'], month=property['lower']['month'], day=property['lower']['day'], hour=property['lower']['hour'], minute=property['lower']['minute'], second=property['lower']['second'])
+            end_date=datetime.datetime(year=property['upper']['year'], month=property['upper']['month'], day=property['upper']['day'], hour=property['upper']['hour'], minute=property['upper']['minute'], second=property['upper']['second'])
+            generated_datetime=fake.date_time_between(start_date=start_date, end_date=end_date)
+            if property['type'] == 'epoch':
+                row.append(generated_datetime.strftime('%s'))
+            else:
+                row.append(str(generated_datetime).replace(" ", "T" ))
         elif property['type'] == 'name':
             row.append(fake.name())
         elif property['type'] == 'phone':

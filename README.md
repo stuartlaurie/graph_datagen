@@ -47,7 +47,7 @@ Repeating section for each node to be generated, common settings
 * `label`: [label for node]
 * `no_to_generate`: [no. of nodes to generate] - supports both 1000000 and 1,000,000 formats
 
-### additional labels
+#### additional labels
 
 Repeating section for each additional label to specify, useful for e.g. generating additional occasional labels like 'flagged'
 
@@ -101,6 +101,25 @@ will generate random date between lower and upper values - split down to ymd to 
     * `year`: 2023
     * `month`: 1
     * `day`: 1
+
+**datetime/epoch**
+
+will generate random datetime between lower and upper values - split down to ymd to avoid pesky US/European dates - can be output either as datetime string (default) or if using epoch use `output_type: int`
+
+    * `lower`:
+        * `year`: 2022
+        * `month`: 1
+        * `day`: 1
+        * `hour`: 2023
+        * `second`: 1
+        * `minute`: 1        
+    * `upper`:
+        * `year`: 2023
+        * `month`: 1
+        * `day`: 1
+        * `hour`: 2023
+        * `second`: 1
+        * `minute`: 1        
 
 **list**
 
