@@ -40,6 +40,8 @@ def generateProperties(row, properties):
             row.append(fake.ssn())
         elif property['type'] == 'ip':
             row.append(fake.ipv4())
+        elif property['type'] == 'ID':
+            row.append(row[0])
         else:
             print("WARNING: Unknown property type, ignoring.. " + property['type'])
             row.append("")

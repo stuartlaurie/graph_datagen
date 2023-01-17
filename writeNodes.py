@@ -6,7 +6,11 @@ from helpers import *
 def create_node_header(data_dir, config):
     filename=data_dir+"/"+config['label']+"Node_Headers.csv"
 
-    header=['id:ID('+config['label']+')']
+    id_property_name="id"
+    if "id_property_name" in config:
+        id_property_name=config['id_property_name']
+
+    header=[id_property_name+':ID('+config['label']+')']
     filename=writeImportHeader(filename,header,config)
 
     return filename
