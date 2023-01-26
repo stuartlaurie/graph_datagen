@@ -15,15 +15,15 @@ def create_rel_header(data_dir, config):
 
     return filename
 
-def create_rel_data(filename, output_format, start_id, no_rels, label, config, nodelabelcount):
+def create_rel_data(filename, output_format, start_id, no_rels, label, config, nodeidrange):
 
     data = []
 
     for i in range(start_id, start_id+no_rels):
 
         list = []
-        list.append(config['source_node_label']+str(random.randint(1,nodelabelcount[config['source_node_label']])))
-        list.append(config['target_node_label']+str(random.randint(1,nodelabelcount[config['target_node_label']])))
+        list.append(config['source_node_label']+str(random.randint(nodeidrange[config['source_node_label']]['lower'],nodeidrange[config['source_node_label']]['upper'])))
+        list.append(config['target_node_label']+str(random.randint(nodeidrange[config['source_node_label']]['lower'],nodeidrange[config['source_node_label']]['upper'])))
 
         if "properties" in config:
             list=generateProperties(list,config['properties'])

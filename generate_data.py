@@ -40,7 +40,13 @@ def calculate_work_split(config,records_per_file,data_dir,output_format,nodelabe
     ## config, records_per_file, data_dir, output_format
 
     i=0
-    start_id=1
+    if "start_id" in config:
+        if type(config["start_id"]) != int:
+            start_id=int(config['start_id'].replace(',',''))
+        else:
+           start_id=config['start_id']
+    else:
+        start_id=1
     work=[]
     filelist=[]
 
@@ -134,8 +140,10 @@ if __name__ == '__main__':
     ## setup dicts
     import_node_config=dict()
     import_rel_config=dict()
-    nodelabelcount=dict()
+    nodeidrange={}
     rel_config=dict()
+
+    print("Using %s processes" % processes)
 
     ##############################
     ## Generate Node files
@@ -147,10 +155,14 @@ if __name__ == '__main__':
 
         if type(nodeconfig['no_to_generate']) != int:
             nodeconfig['no_to_generate']=int(nodeconfig['no_to_generate'].replace(',','')) ## allow for string with thousand ,
-        nodelabelcount[nodeconfig['label']]=nodeconfig['no_to_generate'] ## store for lookup of valid id range for rel generation
+        if type(nodeconfig['start_id']) != int:
+            nodeconfig['start_id']=int(nodeconfig['start_id'].replace(',','')) ## allow for string with thousand ,
+        nodeidrange[nodeconfig['label']]={}
+        nodeidrange[nodeconfig['label']]['lower']=nodeconfig['start_id'] ## store for lookup of valid id range for rel generation
+        nodeidrange[nodeconfig['label']]['upper']=nodeconfig['start_id']+nodeconfig['no_to_generate'] ## store for lookup of valid id range for rel generation
 
         data_dir=create_output_dir(os.path.join(base_dir, nodeconfig['label']))
-        work, node_files=calculate_work_split(nodeconfig, records_per_file, data_dir, output_format, nodelabelcount)
+        work, node_files=calculate_work_split(nodeconfig, records_per_file, data_dir, output_format, nodeidrange)
 
         print ("Generating " + str(nodeconfig['no_to_generate']) + " " + nodeconfig['label'] + " in: " + str((len(work))) + " jobs")
         node_generation_start=time.time()
@@ -174,7 +186,7 @@ if __name__ == '__main__':
             relationshipconfig['no_to_generate']=int(relationshipconfig['no_to_generate'].replace(',','')) ## allow for string with thousand ,
 
         data_dir=create_output_dir(os.path.join(base_dir, relationshipconfig['label']))
-        work, rel_files=calculate_work_split(relationshipconfig, records_per_file, data_dir, output_format, nodelabelcount)
+        work, rel_files=calculate_work_split(relationshipconfig, records_per_file, data_dir, output_format, nodeidrange)
 
         print ("Generating " + str(relationshipconfig['no_to_generate']) + " " + relationshipconfig['label'] + " relationships in: " + str((len(work))) + " jobs")
         rel_start=time.time()
