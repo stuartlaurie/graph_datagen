@@ -46,6 +46,7 @@ Repeating section for each node to be generated, common settings
 
 * `label`: [label for node]
 * `no_to_generate`: [no. of nodes to generate] - supports both 1000000 and 1,000,000 formats
+* `start_id`: optional - give a start id that will be incremented on - useful when generating incremental sets e.g start numbering at this value (if not specified, numbering starts at 1)
 
 #### additional labels
 
@@ -64,6 +65,7 @@ Repeating section for each relationship to be generated, common settings
 * `no_to_generate`: [no. of relationships to generate] - supports both 1000000 and 1,000,000 formats
 * `source_node_label`: [label of source node]
 * `target_node_label`: [User of target node]
+* `start_id`: optional - give a start id that will be incremented on - useful when generating incremental sets e.g start numbering at this value (if not specified, numbering starts at 1)
 
 
 ### properties
