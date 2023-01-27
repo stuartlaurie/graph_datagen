@@ -3,14 +3,17 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from helpers import *
 
-def create_node_header(data_dir, config):
+def create_node_header(data_dir, config, admin_config):
     filename=data_dir+"/"+config['label']+"Node_Headers.csv"
 
-    id_property_name="id"
-    if "id_property_name" in config:
-        id_property_name=config['id_property_name']
+    if "id_property_name" not in config:
+        config['id_property_name']="id"
 
-    header=[id_property_name+':ID('+config['label']+')']
+    if admin_config['type'] == "incremental":
+        header=[config['id_property_name']+':ID('+config['label']+')'+'{label:'+config['label']+'}']
+    else:
+        header=[config['id_property_name']+':ID('+config['label']+')']
+
     filename=writeImportHeader(filename,header,config)
 
     return filename

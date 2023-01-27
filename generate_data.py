@@ -36,15 +36,12 @@ def rels(work_data):
     inner_end=time.time()
     print("Process: " + str(work_data[0]) + ", finished generating: "+ str(work_data[4]) + " " + " data in " + str((inner_end - inner_start)) + " seconds", flush=True)
 
-def calculate_work_split(config,records_per_file,data_dir,output_format,nodelabelcount):
+def calculate_work_split(config,records_per_file,data_dir,output_format,idrange):
     ## config, records_per_file, data_dir, output_format
 
     i=0
     if "start_id" in config:
-        if type(config["start_id"]) != int:
-            start_id=int(config['start_id'].replace(',',''))
-        else:
-           start_id=config['start_id']
+        start_id=config['start_id']
     else:
         start_id=1
     work=[]
@@ -52,17 +49,17 @@ def calculate_work_split(config,records_per_file,data_dir,output_format,nodelabe
 
     if records_per_file >= config['no_to_generate']:
         filename=create_filename(data_dir,config['label'],i,output_format)
-        job=[1, filename, output_format, start_id, config['no_to_generate'], config['label'], config, nodelabelcount]
+        job=[1, filename, output_format, start_id, config['no_to_generate'], config['label'], config, idrange]
     else:
-        while start_id <= config['no_to_generate']:
+        while start_id <= idrange[config['label']]['upper']:
             filename=create_filename(data_dir,config['label'],i,output_format)
-            job=[i, filename, output_format, start_id, records_per_file, config['label'], config, nodelabelcount]
+            job=[i, filename, output_format, start_id, records_per_file, config['label'], config, idrange]
             work.append(job)
             filelist.append(filename)
             i=i+1
             start_id=start_id+records_per_file
 
-        if start_id > config['no_to_generate']:
+        if start_id > idrange[config['label']]['upper']:
             discard=work.pop() ## get rid of incorrect entry
             i=i-1
 
@@ -70,7 +67,7 @@ def calculate_work_split(config,records_per_file,data_dir,output_format,nodelabe
             records_per_file=config['no_to_generate']-(start_id)+1
 
             filename=create_filename(data_dir,config['label'],i,output_format)
-            job=[i, filename, output_format, start_id, records_per_file, config['label'], config, nodelabelcount]
+            job=[i, filename, output_format, start_id, records_per_file, config['label'], config, idrange]
 
 
     work.append(job)
@@ -92,7 +89,7 @@ def create_adminimport_command(nodefiles,relfiles,config):
     if 'neo4j' in config.keys() and config['neo4j']['recreate_db'] == True:
         loadCommand.write("echo \"DROP DATABASE "+ config['database'] + "\" | " + config['path'] + "cypher-shell -u " + config['neo4j']['username'] + " -p " + config['neo4j']['password'] + "\n")
 
-    loadCommand.write(config['path'] + config['cmd'])
+    loadCommand.write(config['path'] + config['cmd'] + " " +config['type'])
     loadCommand.write(" \\\n")
 
     for key, value in config['options'].items():
@@ -123,10 +120,7 @@ if __name__ == '__main__':
     load_config(configuration)
 
     ## Get general settings
-    if type(config['records_per_file']) != int:
-        records_per_file=int(config['records_per_file'].replace(',',''))
-    else:
-        records_per_file=config['records_per_file']
+    records_per_file=string_to_int(config['records_per_file'])
     output_format=config['output_format']
     processes=multiprocessing.cpu_count() ## config['threads']
 
@@ -140,7 +134,7 @@ if __name__ == '__main__':
     ## setup dicts
     import_node_config=dict()
     import_rel_config=dict()
-    nodeidrange={}
+    idrange={}
     rel_config=dict()
 
     print("Using %s processes" % processes)
@@ -153,16 +147,18 @@ if __name__ == '__main__':
 
     for nodeconfig in config['nodes']:
 
-        if type(nodeconfig['no_to_generate']) != int:
-            nodeconfig['no_to_generate']=int(nodeconfig['no_to_generate'].replace(',','')) ## allow for string with thousand ,
-        if type(nodeconfig['start_id']) != int:
-            nodeconfig['start_id']=int(nodeconfig['start_id'].replace(',','')) ## allow for string with thousand ,
-        nodeidrange[nodeconfig['label']]={}
-        nodeidrange[nodeconfig['label']]['lower']=nodeconfig['start_id'] ## store for lookup of valid id range for rel generation
-        nodeidrange[nodeconfig['label']]['upper']=nodeconfig['start_id']+nodeconfig['no_to_generate'] ## store for lookup of valid id range for rel generation
+        nodeconfig['no_to_generate']=string_to_int(nodeconfig['no_to_generate']) ## allow for string with thousand ,
+
+        if 'start_id' in nodeconfig:
+            nodeconfig['start_id']=string_to_int(nodeconfig['start_id'])
+        else:
+            nodeconfig['start_id']=1
+
+        ## store for lookup of valid id range
+        idrange=add_id_range(idrange,nodeconfig['label'],nodeconfig['start_id'],nodeconfig['no_to_generate'])
 
         data_dir=create_output_dir(os.path.join(base_dir, nodeconfig['label']))
-        work, node_files=calculate_work_split(nodeconfig, records_per_file, data_dir, output_format, nodeidrange)
+        work, node_files=calculate_work_split(nodeconfig, records_per_file, data_dir, output_format, idrange)
 
         print ("Generating " + str(nodeconfig['no_to_generate']) + " " + nodeconfig['label'] + " in: " + str((len(work))) + " jobs")
         node_generation_start=time.time()
@@ -170,7 +166,7 @@ if __name__ == '__main__':
         node_generation_end=time.time()
 
         if output_format != "parquet":
-            header_file=create_node_header(base_dir,nodeconfig)
+            header_file=create_node_header(base_dir,nodeconfig,config['admin-import'])
             import_node_config[nodeconfig['label']]=[header_file]+[data_dir+"/.*"] ## use node_files for all filenames
 
 
@@ -182,11 +178,18 @@ if __name__ == '__main__':
 
     for relationshipconfig in config['relationships']:
 
-        if type(relationshipconfig['no_to_generate']) != int:
-            relationshipconfig['no_to_generate']=int(relationshipconfig['no_to_generate'].replace(',','')) ## allow for string with thousand ,
+        relationshipconfig['no_to_generate']=string_to_int(relationshipconfig['no_to_generate']) ## allow for string with thousand ,
+
+        if 'start_id' in relationshipconfig:
+            relationshipconfig['start_id']=string_to_int(relationshipconfig['start_id'])
+        else:
+            relationshipconfig['start_id']=1
+
+        ## store for lookup of valid id range
+        idrange=add_id_range(idrange,relationshipconfig['label'],relationshipconfig['start_id'],relationshipconfig['no_to_generate'])
 
         data_dir=create_output_dir(os.path.join(base_dir, relationshipconfig['label']))
-        work, rel_files=calculate_work_split(relationshipconfig, records_per_file, data_dir, output_format, nodeidrange)
+        work, rel_files=calculate_work_split(relationshipconfig, records_per_file, data_dir, output_format, idrange)
 
         print ("Generating " + str(relationshipconfig['no_to_generate']) + " " + relationshipconfig['label'] + " relationships in: " + str((len(work))) + " jobs")
         rel_start=time.time()
@@ -203,6 +206,7 @@ if __name__ == '__main__':
 
     if output_format != "parquet":
         create_adminimport_command(import_node_config,import_rel_config,config['admin-import'])
+        warn_about_incremental_constraint(config)
 
     total_end=time.time()
 

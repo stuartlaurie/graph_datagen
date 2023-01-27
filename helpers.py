@@ -47,6 +47,11 @@ def generateProperties(row, properties):
             row.append("")
     return row
 
+def add_id_range(idrange,label,start_id,no_to_generate):
+    idrange[label]={}
+    idrange[label]['lower']=start_id
+    idrange[label]['upper']=no_to_generate+start_id
+    return idrange
 
 def generateLabels(row, labels):
     for label in labels:
@@ -55,6 +60,11 @@ def generateLabels(row, labels):
         else:
             row.append(np.random.choice(label['values']))
     return row
+
+def string_to_int(thing):
+    if type(thing) != int:
+        thing = int(thing.replace(',',''))
+    return thing
 
 def writeImportHeader(filename,header,config):
     if "labels" in config:
@@ -82,3 +92,12 @@ def setColumnHeader(header,config):
         for propertyconfig in config['properties']:
             header.append(propertyconfig['name'])
     return header
+
+def warn_about_incremental_constraint(config):
+    if config['admin-import']['type'] == "incremental":
+        print ("WARNING: Don't forget you'll need constraints for incremental to work !!!")
+
+        for nodeconfig in config['nodes']:
+            print ("\nCREATE CONSTRAINT "+ nodeconfig['label']+"Constraint")
+            print ("FOR (n:" + nodeconfig['label']+")")
+            print ("REQUIRE n."+ nodeconfig['id_property_name']+" IS UNIQUE;\n")
