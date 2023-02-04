@@ -50,7 +50,7 @@ def generateProperties(row, properties):
 def add_id_range(idrange,label,start_id,no_to_generate):
     idrange[label]={}
     idrange[label]['lower']=start_id
-    idrange[label]['upper']=no_to_generate+start_id
+    idrange[label]['upper']=no_to_generate+start_id-1
     return idrange
 
 def generateLabels(row, labels):
@@ -95,9 +95,13 @@ def setColumnHeader(header,config):
 
 def warn_about_incremental_constraint(config):
     if config['admin-import']['type'] == "incremental":
-        print ("WARNING: Don't forget you'll need constraints for incremental to work !!!")
 
-        for nodeconfig in config['nodes']:
-            print ("\nCREATE CONSTRAINT "+ nodeconfig['label']+"Constraint")
-            print ("FOR (n:" + nodeconfig['label']+")")
-            print ("REQUIRE n."+ nodeconfig['id_property_name']+" IS UNIQUE;\n")
+        filename=config['output_dir']+"/Neo4jConstraints.cypher"
+        print ("WARNING: Don't forget you'll need constraints for incremental to work !!!")
+        print ("Cypher for constraints written to: "+filename)
+
+        with open(filename, 'w') as constraintsfile:
+            for nodeconfig in config['nodes']:
+                print ("\nCREATE CONSTRAINT "+ nodeconfig['label']+"Constraint", file=constraintsfile)
+                print ("FOR (n:" + nodeconfig['label']+")", file=constraintsfile)
+                print ("REQUIRE n."+ nodeconfig['id_property_name']+" IS UNIQUE;\n", file=constraintsfile)

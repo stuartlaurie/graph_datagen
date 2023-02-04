@@ -64,7 +64,7 @@ def calculate_work_split(config,records_per_file,data_dir,output_format,idrange)
             i=i-1
 
             start_id=start_id-records_per_file
-            records_per_file=config['no_to_generate']-(start_id)+1
+            records_per_file=idrange[config['label']]['upper']-(start_id)
 
             filename=create_filename(data_dir,config['label'],i,output_format)
             job=[i, filename, output_format, start_id, records_per_file, config['label'], config, idrange]
