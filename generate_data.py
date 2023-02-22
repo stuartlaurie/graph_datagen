@@ -23,20 +23,20 @@ def create_filename(data_dir,prefix,id,output_format):
     return filename
 
 def nodes(work_data):
-    ## work_data = i, filename, output_format, start_id, no_nodes, label, config
+    ## work_data = i, filename, output_format, start_id, no_nodes, label, config, general_config
     inner_start=time.time()
-    create_node_data(work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6])
+    create_node_data(work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6],work_data[8])
     inner_end=time.time()
     print("Process: " + str(work_data[0]) + ", finished generating: "+ str(work_data[4]) + " data in " + str((inner_end - inner_start)) + " seconds", flush=True)
 
 def rels(work_data):
-    ## work_data = i, filename, output_format, start_id, no_rels, total_rels, label, config, nodelabelcount
+    ## work_data = i, filename, output_format, start_id, no_rels, total_rels, label, config, nodelabelcount, general_config
     inner_start=time.time()
-    create_rel_data(work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6],work_data[7])
+    create_rel_data(work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6],work_data[7],work_data[8])
     inner_end=time.time()
     print("Process: " + str(work_data[0]) + ", finished generating: "+ str(work_data[4]) + " " + " data in " + str((inner_end - inner_start)) + " seconds", flush=True)
 
-def calculate_work_split(config,records_per_file,data_dir,output_format,idrange):
+def calculate_work_split(config,records_per_file,data_dir,output_format,idrange,generalconfig):
     ## config, records_per_file, data_dir, output_format
 
     i=0
@@ -49,11 +49,11 @@ def calculate_work_split(config,records_per_file,data_dir,output_format,idrange)
 
     if records_per_file >= config['no_to_generate']:
         filename=create_filename(data_dir,config['label'],i,output_format)
-        job=[1, filename, output_format, start_id, config['no_to_generate'], config['label'], config, idrange]
+        job=[1, filename, output_format, start_id, config['no_to_generate'], config['label'], config, idrange, generalconfig]
     else:
         while start_id <= idrange[config['label']]['upper']:
             filename=create_filename(data_dir,config['label'],i,output_format)
-            job=[i, filename, output_format, start_id, records_per_file, config['label'], config, idrange]
+            job=[i, filename, output_format, start_id, records_per_file, config['label'], config, idrange, generalconfig]
             work.append(job)
             filelist.append(filename)
             i=i+1
@@ -64,10 +64,10 @@ def calculate_work_split(config,records_per_file,data_dir,output_format,idrange)
             i=i-1
 
             start_id=start_id-records_per_file
-            records_per_file=idrange[config['label']]['upper']-(start_id)
+            records_per_file=idrange[config['label']]['upper']-(start_id)+1
 
             filename=create_filename(data_dir,config['label'],i,output_format)
-            job=[i, filename, output_format, start_id, records_per_file, config['label'], config, idrange]
+            job=[i, filename, output_format, start_id, records_per_file, config['label'], config, idrange, generalconfig]
 
 
     work.append(job)
@@ -121,6 +121,10 @@ if __name__ == '__main__':
 
     ## Get general settings
     records_per_file=string_to_int(config['records_per_file'])
+    ## set Dataframe row size to avoid using too much memory when creating larger files
+    if 'df_row_limit' not in config:
+        config['df_row_limit']=1000000
+
     output_format=config['output_format']
     processes=multiprocessing.cpu_count() ## config['threads']
 
@@ -154,11 +158,11 @@ if __name__ == '__main__':
         else:
             nodeconfig['start_id']=1
 
-        ## store for lookup of valid id range
+        ## store for lookup of valid id range when creating rels
         idrange=add_id_range(idrange,nodeconfig['label'],nodeconfig['start_id'],nodeconfig['no_to_generate'])
 
         data_dir=create_output_dir(os.path.join(base_dir, nodeconfig['label']))
-        work, node_files=calculate_work_split(nodeconfig, records_per_file, data_dir, output_format, idrange)
+        work, node_files=calculate_work_split(nodeconfig, records_per_file, data_dir, output_format, idrange, config)
 
         print ("Generating " + str(nodeconfig['no_to_generate']) + " " + nodeconfig['label'] + " in: " + str((len(work))) + " jobs")
         node_generation_start=time.time()
@@ -189,7 +193,7 @@ if __name__ == '__main__':
         idrange=add_id_range(idrange,relationshipconfig['label'],relationshipconfig['start_id'],relationshipconfig['no_to_generate'])
 
         data_dir=create_output_dir(os.path.join(base_dir, relationshipconfig['label']))
-        work, rel_files=calculate_work_split(relationshipconfig, records_per_file, data_dir, output_format, idrange)
+        work, rel_files=calculate_work_split(relationshipconfig, records_per_file, data_dir, output_format, idrange, config)
 
         print ("Generating " + str(relationshipconfig['no_to_generate']) + " " + relationshipconfig['label'] + " relationships in: " + str((len(work))) + " jobs")
         rel_start=time.time()

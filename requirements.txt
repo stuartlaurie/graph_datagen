@@ -1,5 +1,6 @@
 pandas
 pyarrow
+fastparquet
 numpy
 faker
 pyyaml

@@ -30,7 +30,8 @@ Configuration is done via the yaml file - [here are some example configs](./exam
 ### General
 
 * general directory setup/output
-* can specify no records/file - setting this will define how many files get created as (total no./records per) `something to play with for larger datasets` - supports both 1000000 and 1,000,000 formats
+* `records_per_file`: [no records per file] - setting this will define how many files get created as (total no./records per) `something to play with for larger datasets` - supports both 1000000 and 1,000,000 formats
+* `df_row_limit`: [max no. rows in dataframe] - helps with memory management when creating files with larger no. records, will create limit rows and append to file
 
 
 ### admin-import

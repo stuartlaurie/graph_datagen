@@ -1,6 +1,3 @@
-import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 import random
 from helpers import *
 
@@ -15,9 +12,12 @@ def create_rel_header(data_dir, config):
 
     return filename
 
-def create_rel_data(filename, output_format, start_id, no_rels, label, config, nodeidrange):
+def create_rel_data(filename, output_format, start_id, no_rels, label, config, nodeidrange, generalconfig):
 
     data = []
+    df_chunk=generalconfig['df_row_limit']
+    df_chunk_no=1
+    column_header=setColumnHeader(['START_ID','END_ID'],config)
 
     for i in range(start_id, start_id+no_rels):
 
@@ -30,16 +30,11 @@ def create_rel_data(filename, output_format, start_id, no_rels, label, config, n
 
         data.append(list)
 
-    column_header=setColumnHeader(['START_ID','END_ID'],config)
-    df = pd.DataFrame(data, columns=column_header)
+        if i % df_chunk == 0:
+            write_to_file(filename,output_format,data,column_header,df_chunk_no)
+            df_chunk_no+=1
+            data=[]
 
-    if (output_format == "parquet"):
-        table = pa.Table.from_pandas(df)
-        pq.write_table(table, filename)
-    elif (output_format == "gzip"):
-        df.to_csv(filename, index=False, header=False, compression="gzip")
-    else:
-        df.to_csv(filename, index=False, header=False)
-
+    write_to_file(filename,output_format,data,column_header,df_chunk_no)
 
     return filename
