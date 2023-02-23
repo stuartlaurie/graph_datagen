@@ -1,6 +1,6 @@
 from multiprocessing import Pool
-from writeNodes import *
-from writeRels import *
+from helpers.create_nodes import *
+from helpers.create_rels import *
 
 import sys
 import multiprocessing
@@ -82,31 +82,6 @@ def node_pool(processes):
 def rel_pool(processes):
     with Pool(processes) as relPool:
         relPool.map(rels, work)
-
-def create_adminimport_command(nodefiles,relfiles,config):
-    loadCommand=open(base_dir+'/importCommand.sh', 'w', newline='')
-
-    if 'neo4j' in config.keys() and config['neo4j']['recreate_db'] == True:
-        loadCommand.write("echo \"DROP DATABASE "+ config['database'] + "\" | " + config['path'] + "cypher-shell -u " + config['neo4j']['username'] + " -p " + config['neo4j']['password'] + "\n")
-
-    loadCommand.write(config['path'] + config['cmd'] + " " +config['type'])
-    loadCommand.write(" \\\n")
-
-    for key, value in config['options'].items():
-        loadCommand.write("  --"+key+"=" + str(value) + " \\\n")
-
-    for key, value in nodefiles.items():
-        loadCommand.write("  --nodes="+key+"=" + ','.join(value) + " \\\n")
-
-    for key, value in relfiles.items():
-        loadCommand.write("  --relationships="+key+"=" + ','.join(value) + " \\\n")
-
-    loadCommand.write(" " + config['database']+ " \n")
-
-    if 'neo4j' in config.keys() and config['neo4j']['recreate_db'] == True:
-        loadCommand.write("echo \"CREATE DATABASE "+ config['database'] + "\" | " + config['path'] + "cypher-shell -u " + config['neo4j']['username'] + " -p " + config['neo4j']['password'] + "\n")
-
-    loadCommand.close()
 
 def load_config(configuration):
     global config
@@ -209,7 +184,7 @@ if __name__ == '__main__':
     ##############################
 
     if output_format != "parquet":
-        create_adminimport_command(import_node_config,import_rel_config,config['admin-import'])
+        create_adminimport_command(base_dir,import_node_config,import_rel_config,config['admin-import'])
         warn_about_incremental_constraint(config)
 
     total_end=time.time()

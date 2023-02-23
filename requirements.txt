@@ -1,6 +1,6 @@
 pandas
-pyarrow
+pyyaml
+faker
 fastparquet
 numpy
-faker
-pyyaml
+pyarrow
