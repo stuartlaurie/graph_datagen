@@ -13,7 +13,7 @@ Tool to generate sample graphs for Neo4j - mostly used to synthesize large graph
 Sample Graph can be generated using [generate_data.py](./generate_data.py)
 
 ```
-python3 generate_data.py examples/small-test.conf
+python3 generate_graph_data.py examples/small-test.conf
 ```
 
 This will generate node and relationship files and output to either:
