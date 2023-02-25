@@ -29,7 +29,7 @@ def create_rel_data(filename, output_format, start_id, no_rels, label, config, n
         list = []
         ## create relationship from random source/target IDs
         list.append(config['source_node_label']+str(random.randint(nodeidrange[config['source_node_label']]['lower'],nodeidrange[config['source_node_label']]['upper'])))
-        list.append(config['target_node_label']+str(random.randint(nodeidrange[config['source_node_label']]['lower'],nodeidrange[config['source_node_label']]['upper'])))
+        list.append(config['target_node_label']+str(random.randint(nodeidrange[config['target_node_label']]['lower'],nodeidrange[config['target_node_label']]['upper'])))
 
         if "properties" in config:
             list=generate_properties(list,config['properties'])

@@ -36,3 +36,22 @@ Go get a Coffee (or lunch..) this takes ~30 mins on my M1 MacBook
 ![social-datagen Model](./img/social-datagen.png)
 
 ## payment-datagen.conf
+
+generates:
+* ~3.5m `AccountHolder` nodes
+  * `name` properties
+* ~2.5m `Phone` nodes
+  * `phone` properties
+* ~2.5m `Email` nodes
+  * `email` properties
+* ~4.5m `IP` nodes
+  * `ip` properties
+* ~2.5m `SSN` nodes
+  * `ssn` properties
+
+* ~4.5m `HAS_PHONE` relationships
+* ~4.0m `HAS_EMAIL` relationships
+* ~4.0m `HAS_IP` relationships
+* ~4.0m `HAS_SSN` relationships
+
+![payment-datagen Model](./img/payment-datagen.png)
