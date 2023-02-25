@@ -27,14 +27,14 @@ def nodes(work_data):
     inner_start=time.time()
     create_node_data(work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6],work_data[8])
     inner_end=time.time()
-    print("Process: " + str(work_data[0]) + ", finished generating: "+ str(work_data[4]) + " data in " + str((inner_end - inner_start)) + " seconds", flush=True)
+    print("Process: " + str(work_data[0]) + ", finished generating: "+ str(work_data[4]) + " nodes in " + str(round(inner_end - inner_start,2)) + " seconds", flush=True)
 
 def rels(work_data):
     ## work_data = i, filename, output_format, start_id, no_rels, total_rels, label, config, nodelabelcount, general_config
     inner_start=time.time()
     create_rel_data(work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6],work_data[7],work_data[8])
     inner_end=time.time()
-    print("Process: " + str(work_data[0]) + ", finished generating: "+ str(work_data[4]) + " " + " data in " + str((inner_end - inner_start)) + " seconds", flush=True)
+    print("Process: " + str(work_data[0]) + ", finished generating: "+ str(work_data[4]) + " rels in " + str(round(inner_end - inner_start,2)) + " seconds", flush=True)
 
 def calculate_work_split(config,records_per_file,data_dir,output_format,idrange,generalconfig):
     ## config, records_per_file, data_dir, output_format
@@ -189,4 +189,4 @@ if __name__ == '__main__':
 
     total_end=time.time()
 
-    print("Total time: " + str((total_end - total_start)) + " seconds")
+    print("Total time: " + str(round(total_end - total_start,2)) + " seconds")

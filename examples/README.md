@@ -31,6 +31,8 @@ Larger example with simple model, generates:
 * ~300m `User` nodes
 * ~1.5b `FOLLOWS` relationships
 
+Go get a Coffee (or lunch..) this takes ~30 mins on my M1 MacBook
+
 ![social-datagen Model](./img/social-datagen.png)
 
 ## payment-datagen.conf
