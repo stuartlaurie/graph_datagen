@@ -1,6 +1,7 @@
 from multiprocessing import Pool
 from helpers.create_nodes import *
 from helpers.create_rels import *
+from helpers.validate_config import *
 
 import sys
 import multiprocessing
@@ -85,8 +86,10 @@ def rel_pool(processes):
 
 def load_config(configuration):
     global config
+    global idrange
     with open(configuration) as config_file:
         config = yaml.load(config_file, yaml.SafeLoader)
+        config, idrange = validate_config(config)
 
 if __name__ == '__main__':
 
@@ -95,11 +98,7 @@ if __name__ == '__main__':
     load_config(configuration)
 
     ## Get general settings
-    records_per_file=string_to_int(config['records_per_file'])
-    ## set Dataframe row size to avoid using too much memory when creating larger files
-    if 'df_row_limit' not in config:
-        config['df_row_limit']=1000000
-
+    records_per_file=config['records_per_file']
     output_format=config['output_format']
     processes=multiprocessing.cpu_count() ## config['threads']
 
@@ -113,7 +112,6 @@ if __name__ == '__main__':
     ## setup dicts
     import_node_config=dict()
     import_rel_config=dict()
-    idrange={}
     rel_config=dict()
 
     print("Using %s processes" % processes)
@@ -125,16 +123,6 @@ if __name__ == '__main__':
     print("**NODE GENERATION**")
 
     for nodeconfig in config['nodes']:
-
-        nodeconfig['no_to_generate']=string_to_int(nodeconfig['no_to_generate']) ## allow for string with thousand ,
-
-        if 'start_id' in nodeconfig:
-            nodeconfig['start_id']=string_to_int(nodeconfig['start_id'])
-        else:
-            nodeconfig['start_id']=1
-
-        ## store for lookup of valid id range when creating rels
-        idrange=add_id_range(idrange,nodeconfig['label'],nodeconfig['start_id'],nodeconfig['no_to_generate'])
 
         data_dir=create_output_dir(os.path.join(base_dir, nodeconfig['label']))
         work, node_files=calculate_work_split(nodeconfig, records_per_file, data_dir, output_format, idrange, config)
@@ -156,16 +144,6 @@ if __name__ == '__main__':
     print("**RELATIONSHIP GENERATION**")
 
     for relationshipconfig in config['relationships']:
-
-        relationshipconfig['no_to_generate']=string_to_int(relationshipconfig['no_to_generate']) ## allow for string with thousand ,
-
-        if 'start_id' in relationshipconfig:
-            relationshipconfig['start_id']=string_to_int(relationshipconfig['start_id'])
-        else:
-            relationshipconfig['start_id']=1
-
-        ## store for lookup of valid id range
-        idrange=add_id_range(idrange,relationshipconfig['label'],relationshipconfig['start_id'],relationshipconfig['no_to_generate'])
 
         data_dir=create_output_dir(os.path.join(base_dir, relationshipconfig['label']))
         work, rel_files=calculate_work_split(relationshipconfig, records_per_file, data_dir, output_format, idrange, config)

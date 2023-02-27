@@ -64,10 +64,10 @@ Repeating section for each relationship to be generated, common settings
 
 * `label`: [label for relationship]
 * `no_to_generate`: [no. of relationships to generate] - supports both 1000000 and 1,000,000 formats
+* `ratio_to_generate`: [ratio of relationships to generate] - can be used instead of `no_to_generate` will apply ratio to `source label` value `no_to_generate`
 * `source_node_label`: [label of source node]
 * `target_node_label`: [User of target node]
 * `start_id`: optional - give a start id that will be incremented on - useful when generating incremental sets e.g start numbering at this value (if not specified, numbering starts at 1)
-
 
 ### properties
 

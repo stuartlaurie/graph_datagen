@@ -25,6 +25,10 @@ Small example that shows some of the generation features, generates:
 
 Same model as small-test, but offsets start of node IDs and generates relevant admin import configuration including output of constraints that will be needed to run the incremental import
 
+## small-test-ratio.conf
+
+Same model as small-test, but uses a ratio for relationship generation - `ratio_to_generate` of `5` gives 5 x no specified as `User - no_to_generate`, so ~140k follows relationships are created
+
 ## social-datagen.conf
 
 Larger example with simple model, generates:

@@ -1,19 +1,6 @@
 import pandas as pd
 from fastparquet import write
 
-def add_id_range(idrange,label,start_id,no_to_generate):
-    ## store id ranges of nodes/relationships
-    idrange[label]={}
-    idrange[label]['lower']=start_id
-    idrange[label]['upper']=no_to_generate+start_id-1
-    return idrange
-
-def string_to_int(thing):
-    ## converts comma separated sting to int
-    if type(thing) != int:
-        thing = int(thing.replace(',',''))
-    return thing
-
 def set_column_header(header,config):
     ## creates header for dataframe based on config
     if "labels" in config:
