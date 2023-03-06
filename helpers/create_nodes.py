@@ -3,7 +3,7 @@ from helpers.admin_import import *
 from helpers.create_data import *
 
 def create_node_header(data_dir, config, admin_config):
-    filename=data_dir+"/"+config['label']+"Node_Headers.csv"
+    filename=data_dir+"/"+config['label']+"_Node_Headers.csv"
 
     if "id_property_name" not in config:
         config['id_property_name']="id"
