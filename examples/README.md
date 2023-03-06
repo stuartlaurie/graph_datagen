@@ -59,3 +59,26 @@ generates:
 * ~4.0m `HAS_SSN` relationships
 
 ![payment-datagen Model](./img/payment-datagen.png)
+
+## playergraph.conf
+
+Simulates a graph that has users interacting with each other over a period of time - rather than pure random generation of large no. of relationships it uses `rel_multiplier` setting to ensure that when a relationship is created between a source/target node it generates multiple - this is used to model CHATWITH, SENTMESSAGE, RECENTLYPLAYEDWITH relationships where these should represent one relationship per day with a `count` attribute that represents how many interactions on that day
+
+This config also uses the `ratio_to_generate` setting.
+
+generates:
+* ~3m `User` nodes
+  * `age`, `gender`, `country`, `favoritegame` properties
+
+* `FRIENDWITH` relationships
+  * `timestamp` properties
+* `FOLLOWS` relationships
+  * `timestamp` properties
+* `CHATWITH` relationships
+  * `timestamp`,`count` properties
+* `SENTMESSAGE` relationships
+  * `timestamp`,`count` properties
+* `RECENTLYPLAYEDWITH` relationships
+  * `timestamp`,`count` properties
+
+![playergraph Model](./img/playergraph.png)

@@ -67,6 +67,9 @@ Repeating section for each relationship to be generated, common settings
 * `ratio_to_generate`: [ratio of relationships to generate] - can be used instead of `no_to_generate` will apply ratio to `source label` value `no_to_generate`
 * `source_node_label`: [label of source node]
 * `target_node_label`: [User of target node]
+* `rel_multiplier`: [will take random value between lower/upper and generate that no. of relationhships a source/target]
+    * `lower`: 1
+    * `upper`: 28
 * `start_id`: optional - give a start id that will be incremented on - useful when generating incremental sets e.g start numbering at this value (if not specified, numbering starts at 1)
 
 ### properties
