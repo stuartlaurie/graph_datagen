@@ -37,7 +37,7 @@ def create_rel_data(filename, output_format, start_id, no_rels, label, config, n
             rel_multiplier=1
 
         ## create correct no. rels based on multiplier
-        for i in range (0,rel_multiplier):
+        for j in range (0,rel_multiplier):
             list = []
 
             list.append(source_node)
