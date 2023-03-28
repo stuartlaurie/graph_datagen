@@ -8,12 +8,11 @@ def set_column_header(header,config):
             header.append(labelconfig['name'])
     if "properties" in config:
         for propertyconfig in config['properties']:
-            header.append(propertyconfig['name'])
+            if propertyconfig['type'] != 'int':
+                header.append(propertyconfig['name'])
     return header
 
-def write_to_file(filename,output_format,data,column_header,df_chunk):
-    ## write the data to file
-    df = pd.DataFrame(data, columns=column_header)
+def write_to_file(filename,output_format,df,df_chunk):
     # print("Dataframe size: " + str(df.memory_usage(deep=True).sum()/(1024 * 1024 * 1024)) + " GB")
 
     if (output_format == "parquet"):

@@ -43,11 +43,14 @@ def create_node_data(filename, output_format, start_id, no_nodes, label, config,
 
         ## write data chunk to file if df rows exceed chunk size
         if i % df_row_limit == 0:
-            write_to_file(filename,output_format,data,column_header,df_chunk_no)
+            df = batch_generate_properties(data,column_header,config['properties'])
+            write_to_file(filename,output_format,df,df_chunk_no)
             df_chunk_no+=1
             data=[]
+            df=[]
 
     ## write final data to file
-    write_to_file(filename,output_format,data,column_header,df_chunk_no)
+    df = batch_generate_properties(data,column_header,config['properties'])
+    write_to_file(filename,output_format,df,df_chunk_no)
 
     return filename

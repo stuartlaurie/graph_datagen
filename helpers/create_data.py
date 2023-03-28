@@ -1,13 +1,23 @@
 import datetime
 import numpy as np
+import pandas as pd
 from faker import Faker
 fake = Faker()
+
+def batch_generate_properties(data, column_header, properties):
+    df = pd.DataFrame(data, columns=column_header)
+    for property in properties:
+        if property['type'] == 'int' or property['type'] == 'long' :
+            df[property['name']] = np.random.randint(low=property['lower'], high=property['upper'], size=len(df))
+    return df
+
 
 def generate_properties(row, properties):
     ## add properties based on config definition
     for property in properties:
         if property['type'] == 'int' or property['type'] == 'long' :
-            row.append(np.random.randint(property['lower'],property['upper']))
+            blah=0
+            ## row.append(np.random.randint(property['lower'],property['upper']))
         elif property['type'] == 'float' or property['type'] == 'double':
             precision='%.2f'
             if "precision" in property:
