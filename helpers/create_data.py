@@ -18,6 +18,10 @@ def generate_properties(row, properties):
                 row.append(np.random.choice(property['values'],p=property['probability']))
             else:
                 row.append(np.random.choice(property['values']))
+        elif property['type'] == 'array':
+            array=np.random.randint(low=property['lower'], high=property['upper'], size=property['size'])
+            separator=";"
+            row.append(separator.join(str(e) for e in array))
         elif property['type'] == 'date':
             start_date=datetime.datetime(year=property['lower']['year'], month=property['lower']['month'], day=property['lower']['day'])
             end_date=datetime.datetime(year=property['upper']['year'], month=property['upper']['month'], day=property['upper']['day'])

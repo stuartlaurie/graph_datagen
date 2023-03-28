@@ -134,6 +134,14 @@ will randomly select a value from the list and pass to admin-import - if not str
 * `values`: [list of values to select from]
 * `probability`: [list of probabilities for the values] - if not specified defaults to random
 
+**array**
+
+will create an array of random ints of specified size in upper/lower bounds
+
+* `size`: size of array (no. elements to generate)
+* `lower`: [lowest int]
+* `upper`: [highest int]
+
 **name**
 
 uses `fake.name()` [Faker](https://faker.readthedocs.io/en/master/index.html) function to generate random data

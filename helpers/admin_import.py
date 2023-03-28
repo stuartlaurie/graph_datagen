@@ -41,7 +41,10 @@ def write_import_header(filename,header,config):
             if 'output_type' in propertyconfig:
                 header.append(propertyconfig['name']+":"+propertyconfig['output_type'])
             else:
-                header.append(propertyconfig['name']+":"+propertyconfig['type'])
+                if propertyconfig['type'] == 'array':
+                    header.append(propertyconfig['name']+":int[]")
+                else:
+                    header.append(propertyconfig['name']+":"+propertyconfig['type'])
 
     with open(filename, 'w', newline='') as headerfile:
         csv_writer = csv.writer(headerfile)
