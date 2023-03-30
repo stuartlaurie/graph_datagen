@@ -20,7 +20,7 @@ def create_output_dir(data_dir):
 
 def create_filename(data_dir,prefix,id,output_format):
     ## Create Data files
-    filename=os.path.join("./"+data_dir, prefix+str(id)+"."+output_format)
+    filename=os.path.join(data_dir, prefix+str(id)+"."+output_format)
     return filename
 
 def nodes(work_data):
@@ -106,7 +106,7 @@ if __name__ == '__main__':
     rel_files=[]
 
     ## create directory for output
-    base_dir=create_output_dir(str(config['output_dir']))
+    base_dir=create_output_dir(os.path.join(str(config['basepath']), str(config['output_dir']))
     total_start=time.time()
 
     ## setup dicts
