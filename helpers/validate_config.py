@@ -24,6 +24,8 @@ def validate_config(config):
     ## set Dataframe row size to avoid using too much memory when creating larger files
     if 'df_row_limit' not in config:
         config['df_row_limit']=1000000
+    else:
+        config['df_row_limit']=string_to_int(config['df_row_limit'])
 
     ## node validation
     i=0
