@@ -10,10 +10,26 @@ import os
 import time
 import logging
 
-config = dict()
+## global logger
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+# create file handler which logs even debug messages
+fh = logging.FileHandler('graphgenerator-debug.log')
+fh.setLevel(logging.DEBUG)
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+# create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+# add the handlers to the logger
+logger.addHandler(fh)
+logger.addHandler(ch)
 
 def create_output_dir(data_dir):
-    print("Creating output directory: " + data_dir)
+    logger=logging.getLogger('datagenerator')
+    logger.info("Creating output directory: " + data_dir)
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
     return data_dir
@@ -25,17 +41,11 @@ def create_filename(data_dir,prefix,id,output_format):
 
 def nodes(work_data):
     ## work_data = i, filename, output_format, start_id, no_nodes, label, config, general_config
-    inner_start=time.time()
-    create_node_data(work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6],work_data[8])
-    inner_end=time.time()
-    print("Process: " + str(work_data[0]) + ", finished generating: "+ str(work_data[4]) + " nodes in " + str(round(inner_end - inner_start,2)) + " seconds", flush=True)
+    create_node_data(work_data[0],work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6],work_data[8])
 
 def rels(work_data):
     ## work_data = i, filename, output_format, start_id, no_rels, total_rels, label, config, nodelabelcount, general_config
-    inner_start=time.time()
-    create_rel_data(work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6],work_data[7],work_data[8])
-    inner_end=time.time()
-    print("Process: " + str(work_data[0]) + ", finished generating: "+ str(work_data[4]) + " rels in " + str(round(inner_end - inner_start,2)) + " seconds", flush=True)
+    create_rel_data(work_data[0],work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6],work_data[7],work_data[8])
 
 def calculate_work_split(config,records_per_file,data_dir,output_format,idrange,generalconfig):
     ## config, records_per_file, data_dir, output_format
@@ -76,11 +86,11 @@ def calculate_work_split(config,records_per_file,data_dir,output_format,idrange,
 
     return work, filelist
 
-def node_pool(processes):
+def node_pool(processes,work):
     with Pool(processes) as nodePool:
         nodePool.map(nodes, work)
 
-def rel_pool(processes):
+def rel_pool(processes,work):
     with Pool(processes) as relPool:
         relPool.map(rels, work)
 
@@ -91,7 +101,10 @@ def load_config(configuration):
         config = yaml.load(config_file, yaml.SafeLoader)
         config, idrange = validate_config(config)
 
-if __name__ == '__main__':
+def main():
+
+    logger=logging.getLogger('datagenerator')
+    logger.info("**---------STARTING GENERATOR---------**")
 
     ## read YAML configuration
     configuration = sys.argv[1]
@@ -101,6 +114,7 @@ if __name__ == '__main__':
     records_per_file=config['records_per_file']
     output_format=config['output_format']
     processes=multiprocessing.cpu_count() ## config['threads']
+    logger.info("Using %s processes" % processes)
 
     node_files=[]
     rel_files=[]
@@ -114,22 +128,21 @@ if __name__ == '__main__':
     import_rel_config=dict()
     rel_config=dict()
 
-    print("Using %s processes" % processes)
-
     ##############################
     ## Generate Node files
     ##############################
 
-    print("**NODE GENERATION**")
+    logger.info("**NODE GENERATION**")
 
     for nodeconfig in config['nodes']:
 
         data_dir=create_output_dir(os.path.join(base_dir, nodeconfig['label']))
         work, node_files=calculate_work_split(nodeconfig, records_per_file, data_dir, output_format, idrange, config)
+        #logger.debug(work)
 
-        print ("Generating " + str(nodeconfig['no_to_generate']) + " " + nodeconfig['label'] + " in: " + str((len(work))) + " jobs")
+        logger.info("Generating " + str(nodeconfig['no_to_generate']) + " " + nodeconfig['label'] + " in: " + str((len(work))) + " jobs")
         node_generation_start=time.time()
-        node_pool(processes)
+        node_pool(processes,work)
         node_generation_end=time.time()
 
         if output_format != "parquet":
@@ -141,16 +154,16 @@ if __name__ == '__main__':
     ## Generate Relationship files
     ##############################
 
-    print("**RELATIONSHIP GENERATION**")
+    logger.info("**RELATIONSHIP GENERATION**")
 
     for relationshipconfig in config['relationships']:
 
         data_dir=create_output_dir(os.path.join(base_dir, relationshipconfig['label']))
         work, rel_files=calculate_work_split(relationshipconfig, records_per_file, data_dir, output_format, idrange, config)
 
-        print ("Generating " + str(relationshipconfig['no_to_generate']) + " " + relationshipconfig['label'] + " relationships in: " + str((len(work))) + " jobs")
+        logger.info("Generating " + str(relationshipconfig['no_to_generate']) + " " + relationshipconfig['label'] + " relationships in: " + str((len(work))) + " jobs")
         rel_start=time.time()
-        rel_pool(processes)
+        rel_pool(processes,work)
         rel_end=time.time()
 
         if output_format != "parquet":
@@ -167,4 +180,7 @@ if __name__ == '__main__':
 
     total_end=time.time()
 
-    print("Total time: " + str(round(total_end - total_start,2)) + " seconds")
+    logger.info("Total time: " + str(round(total_end - total_start,2)) + " seconds")
+
+if __name__ == '__main__':
+    main()

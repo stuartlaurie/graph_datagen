@@ -1,4 +1,6 @@
 from helpers.general_helpers import *
+import logging
+logger=logging.getLogger(__name__)
 
 def add_id_range(idrange,label,start_id,no_to_generate):
     ## store id ranges of nodes/relationships
@@ -52,14 +54,14 @@ def validate_config(config):
 
         ## if node label that relationship targets does not exist stop and warn
         if not relationshipconfig['source_node_label'] in idrange:
-            print ("ERROR: Relationship source node type: *" + relationshipconfig['source_node_label'] + "* does not exist in node configuration")
-            print ("Defined node labels for generation are: ")
-            print (list(idrange.keys()))
+            logger.error("Relationship source node type: *" + relationshipconfig['source_node_label'] + "* does not exist in node configuration")
+            logger.error("Defined node labels for generation are: ")
+            logger.error(list(idrange.keys()))
             exit()
         elif not relationshipconfig['target_node_label'] in idrange:
-            print ("ERROR: Relationship target node type: *" + relationshipconfig['target_node_label'] + "* does not exist in node configuration")
-            print ("Defined node labels for generation are: ")
-            print (list(idrange.keys()))
+            logger.error("Relationship target node type: *" + relationshipconfig['target_node_label'] + "* does not exist in node configuration")
+            logger.error("Defined node labels for generation are: ")
+            logger.error(list(idrange.keys()))
             exit()
 
         if 'no_to_generate' in relationshipconfig:
@@ -68,7 +70,7 @@ def validate_config(config):
         elif 'ratio_to_generate' in relationshipconfig:
             relationshipconfig['no_to_generate']=int(idrange[relationshipconfig['source_node_label']]['no_to_generate']*relationshipconfig['ratio_to_generate'])
         else:
-            print ("ERROR: 'no_to_generate' or 'ratio_to_generate' are not defined" )
+            logger.error("'no_to_generate' or 'ratio_to_generate' are not defined" )
             exit()
 
         if 'start_id' in relationshipconfig:

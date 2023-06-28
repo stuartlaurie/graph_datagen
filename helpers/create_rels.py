@@ -1,13 +1,17 @@
 import random
+import time
 from helpers.general_helpers import *
 from helpers.admin_import import *
 from helpers.create_data import *
+
+logger=logging.getLogger(__name__)
 
 def create_rel_header(data_dir, config):
     ## create the relationship header file
     filename=data_dir+"/"+config['label']+"_Rel_Headers.csv"
 
     header=[
+        ':IGNORE',
         ':START_ID('+config['source_node_label']+')',
         ':END_ID('+config['target_node_label']+')',
     ]
@@ -16,47 +20,55 @@ def create_rel_header(data_dir, config):
     return filename
 
 
-def create_rel_data(filename, output_format, start_id, no_rels, label, config, nodeidrange, generalconfig):
+def create_rel_data(process,filename, output_format, start_id, no_rels, label, config, nodeidrange, generalconfig):
 
-    data = []
     df_row_limit=generalconfig['df_row_limit']
     df_chunk_no=1
-    column_header=set_column_header(['START_ID','END_ID'],config)
+    column_header=set_column_header(['START_ID','END_ID'],"")
+    id_chunks=get_id_chunks(start_id, (start_id+no_rels), df_row_limit)
+    #logger.debug(id_chunks)
 
-    ## generate relationship data
-    for i in range(start_id, start_id+no_rels):
+    inner_start=time.time()
+    rel_batch_generate_start=time.time()
 
-        ## create relationship from random source/target IDs
-        source_node=config['source_node_label']+str(random.randint(nodeidrange[config['source_node_label']]['lower'],nodeidrange[config['source_node_label']]['upper']))
-        target_node=config['target_node_label']+str(random.randint(nodeidrange[config['target_node_label']]['lower'],nodeidrange[config['target_node_label']]['upper']))
-
-        ## set multiplier
+    for chunk in id_chunks:
+        df = []
+        data = []
+        id_batch_start=time.time()
+        ## generate sequential ids
         if "rel_multiplier" in config:
-            rel_multiplier=random.randint(config['rel_multiplier']['lower'],config['rel_multiplier']['upper'])
+            logger.debug("relationship multiplier selected")
+            for i in range(chunk[0],chunk[1]):
+
+                ## create relationship from random source/target IDs
+                source_node=config['source_node_label']+str(random.randint(nodeidrange[config['source_node_label']]['lower'],nodeidrange[config['source_node_label']]['upper']))
+                target_node=config['target_node_label']+str(random.randint(nodeidrange[config['target_node_label']]['lower'],nodeidrange[config['target_node_label']]['upper']))
+
+                rel_multiplier=random.randint(config['rel_multiplier']['lower'],config['rel_multiplier']['upper'])
+                for j in range (0,rel_multiplier):
+                    list = []
+                    list.append(source_node)
+                    list.append(target_node)
+                    data.append(list)
+            df = pd.DataFrame(data, columns=column_header)
+
         else:
-            rel_multiplier=1
+            logger.debug("Generating chunk: "+str(chunk[0])+" to " + str(chunk[1]))
+            df = generate_ids(df,'id',label,chunk[0],chunk[1])
+            df = generate_random_ids(df,'sourceid',config['source_node_label'],nodeidrange[config['source_node_label']]['lower'],nodeidrange[config['source_node_label']]['upper'],chunk[1]-chunk[0])
+            df = generate_random_ids(df,'targetid',config['target_node_label'],nodeidrange[config['target_node_label']]['lower'],nodeidrange[config['target_node_label']]['upper'],chunk[1]-chunk[0])
 
-        ## create correct no. rels based on multiplier
-        for j in range (0,rel_multiplier):
-            list = []
+        if "properties" in config:
+            df = batch_generate_properties(df,config['properties'])
 
-            list.append(source_node)
-            list.append(target_node)
-            if "properties" in config:
-                list=generate_properties(list,config['properties'])
+        logger.debug(df.head())
+        if 'id' in df:
+            df.drop('id', axis=1, inplace=True)
+        logger.debug(df.head())
+        write_to_file(filename,output_format,df,df_chunk_no)
+        df_chunk_no+=1
 
-            data.append(list)
-
-            ## write data chunk to file if df rows exceed chunk size
-            if i % df_row_limit == 0:
-                df = batch_generate_properties(data,column_header,config['properties'])
-                write_to_file(filename,output_format,df,df_chunk_no)
-                df_chunk_no+=1
-                data=[]
-
-    ## write final data to file
-
-    df = batch_generate_properties(data,column_header,config['properties'])
-    write_to_file(filename,output_format,df,df_chunk_no)
+    inner_end=time.time()
+    logger.info("Process: " + str(process) + ", finished generating: "+ str(no_rels) + " rels in " + str(round(inner_end - inner_start,2)) + " seconds")
 
     return filename
