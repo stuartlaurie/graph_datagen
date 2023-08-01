@@ -158,7 +158,7 @@ def main():
 
     for relationshipconfig in config['relationships']:
 
-        data_dir=create_output_dir(os.path.join(base_dir, relationshipconfig['label']))
+        data_dir=create_output_dir(os.path.join(base_dir, relationshipconfig['label']+"_"+relationshipconfig['source_node_label']+"_"+relationshipconfig['target_node_label']))
         work, rel_files=calculate_work_split(relationshipconfig, records_per_file, data_dir, output_format, idrange, config)
 
         logger.info("Generating " + str(relationshipconfig['no_to_generate']) + " " + relationshipconfig['label'] + " relationships in: " + str((len(work))) + " jobs")
@@ -168,7 +168,11 @@ def main():
 
         if output_format != "parquet":
             header_file=create_rel_header(base_dir,relationshipconfig)
-            import_rel_config[relationshipconfig['label']]=[header_file]+[data_dir+"/.*"] ## rel_files for all filenames
+            relconfig=[header_file,data_dir+"/.*"]
+            if relationshipconfig['label'] in import_rel_config:
+                import_rel_config[relationshipconfig['label']].append(relconfig) ## rel_files for all filenames
+            else:
+                import_rel_config[relationshipconfig['label']]=[relconfig]
 
     ##############################
     ## Generate Import script

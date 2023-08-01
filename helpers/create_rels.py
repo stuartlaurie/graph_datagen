@@ -8,10 +8,10 @@ logger=logging.getLogger(__name__)
 
 def create_rel_header(data_dir, config):
     ## create the relationship header file
-    filename=data_dir+"/"+config['label']+"_Rel_Headers.csv"
+    filename=data_dir+"/"+config['label']+"_"+config['source_node_label']+"_"+config['target_node_label']+"_Rel_Headers.csv"
 
     header=[
-        ':IGNORE',
+        # ':IGNORE',
         ':START_ID('+config['source_node_label']+')',
         ':END_ID('+config['target_node_label']+')',
     ]
