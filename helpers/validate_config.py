@@ -29,6 +29,9 @@ def validate_config(config):
     else:
         config['df_row_limit']=string_to_int(config['df_row_limit'])
 
+    if 'cycles' not in config:
+        config['cycles']=1
+
     ## node validation
     i=0
     for nodeconfig in config['nodes']:
@@ -77,6 +80,40 @@ def validate_config(config):
             relationshipconfig['start_id']=string_to_int(relationshipconfig['start_id'])
         else:
             relationshipconfig['start_id']=1
+
+        ## store for lookup of valid id range
+        idrange=add_id_range(idrange,relationshipconfig['label'],relationshipconfig['start_id'],relationshipconfig['no_to_generate'])
+
+        ## overwrite config with new values
+        config['relationships'][i]=relationshipconfig
+
+        i+=1
+
+    return config, idrange
+
+
+def update_config_ids(config):
+
+    idrange={}
+    ## node validation
+    i=0
+    for nodeconfig in config['nodes']:
+
+        nodeconfig['start_id']=nodeconfig['start_id']+nodeconfig['no_to_generate']
+
+        ## store for lookup of valid id range when creating rels
+        idrange=add_id_range(idrange,nodeconfig['label'],nodeconfig['start_id'],nodeconfig['no_to_generate'])
+
+        ## overwrite config with new values
+        config['nodes'][i]=nodeconfig
+
+        i+=1
+
+    ## relationship validation
+    i=0
+    for relationshipconfig in config['relationships']:
+
+        relationshipconfig['start_id']=relationshipconfig['start_id']+relationshipconfig['no_to_generate']
 
         ## store for lookup of valid id range
         idrange=add_id_range(idrange,relationshipconfig['label'],relationshipconfig['start_id'],relationshipconfig['no_to_generate'])

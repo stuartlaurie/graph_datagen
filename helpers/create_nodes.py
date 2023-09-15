@@ -1,6 +1,7 @@
 from helpers.general_helpers import *
 from helpers.admin_import import *
 from helpers.create_data import *
+from helpers.write_to_file import *
 
 logger=logging.getLogger(__name__)
 
@@ -19,7 +20,9 @@ def create_node_header(data_dir, config, admin_config):
 
     return filename
 
-def create_node_data(process, filename, output_format, start_id, no_nodes, label, config, generalconfig):
+def create_node_data(process, filename, output_format, start_id, no_nodes, label, config, generalconfig, cycle):
+
+    logger.debug("Starting Process: " + str(process) + " generating: "+ str(no_nodes) + " nodes")
 
     df_row_limit=generalconfig['df_row_limit']
     df_chunk_no=1
@@ -41,17 +44,17 @@ def create_node_data(process, filename, output_format, start_id, no_nodes, label
             df=generate_labels(df,config['labels'])
 
         if "properties" in config:
-            df = batch_generate_properties(df,config['properties'])
+            df=batch_generate_properties(df,config['properties'])
 
         #logger.debug(df.head())
 
         id_batch_end=time.time()
-        #logger.debug("id batch generate: " + str(round(id_batch_end - id_batch_start,2)) + " seconds")
+        logger.debug("node batch generation time: " + str(round(id_batch_end - id_batch_start,2)) + " seconds")
 
-        write_to_file(filename,output_format,df,df_chunk_no)
+        write_to_file(filename,output_format,df,df_chunk_no, cycle)
         df_chunk_no+=1
 
     inner_end=time.time()
-    logger.info("Process: " + str(process) + ", finished generating: "+ str(no_nodes) + " nodes in " + str(round(inner_end - inner_start,2)) + " seconds")
+    logger.debug("Finished Process: " + str(process) + ", generating: "+ str(no_nodes) + " nodes in " + str(round(inner_end - inner_start,2)) + " seconds")
 
     return filename

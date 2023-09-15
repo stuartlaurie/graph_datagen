@@ -29,7 +29,7 @@ logger.addHandler(ch)
 
 def create_output_dir(data_dir):
     logger=logging.getLogger('datagenerator')
-    logger.info("Creating output directory: " + data_dir)
+    logger.debug("Creating output directory: " + data_dir)
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
     return data_dir
@@ -39,15 +39,17 @@ def create_filename(data_dir,prefix,id,output_format):
     filename=os.path.join(data_dir, prefix+str(id)+"."+output_format)
     return filename
 
-def nodes(work_data):
+def generate_data(work_data):
     ## work_data = i, filename, output_format, start_id, no_nodes, label, config, general_config
-    create_node_data(work_data[0],work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6],work_data[8])
+    if work_data[1]=="node":
+        create_node_data(work_data[1],work_data[2],work_data[4],work_data[4],work_data[5],work_data[6],work_data[7],work_data[9],work_data[10])
+    elif work_data[1]=="rel":
+        create_rel_data(work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6],work_data[7],work_data[8],work_data[9],work_data[10])
+    else:
+        logger.debug("Not a recognized type, should be either node or rel")
+        exit()
 
-def rels(work_data):
-    ## work_data = i, filename, output_format, start_id, no_rels, total_rels, label, config, nodelabelcount, general_config
-    create_rel_data(work_data[0],work_data[1],work_data[2],work_data[3],work_data[4],work_data[5],work_data[6],work_data[7],work_data[8])
-
-def calculate_work_split(config,records_per_file,data_dir,output_format,idrange,generalconfig):
+def calculate_work_split(work, type,config,records_per_file,data_dir,output_format,idrange,generalconfig,cycle):
     ## config, records_per_file, data_dir, output_format
 
     i=0
@@ -55,16 +57,15 @@ def calculate_work_split(config,records_per_file,data_dir,output_format,idrange,
         start_id=config['start_id']
     else:
         start_id=1
-    work=[]
     filelist=[]
 
     if records_per_file >= config['no_to_generate']:
         filename=create_filename(data_dir,config['label'],i,output_format)
-        job=[1, filename, output_format, start_id, config['no_to_generate'], config['label'], config, idrange, generalconfig]
+        job=[1, type, filename, output_format, start_id, config['no_to_generate'], config['label'], config, idrange, generalconfig, cycle]
     else:
         while start_id <= idrange[config['label']]['upper']:
             filename=create_filename(data_dir,config['label'],i,output_format)
-            job=[i, filename, output_format, start_id, records_per_file, config['label'], config, idrange, generalconfig]
+            job=[i, type, filename, output_format, start_id, records_per_file, config['label'], config, idrange, generalconfig, cycle]
             work.append(job)
             filelist.append(filename)
             i=i+1
@@ -78,7 +79,7 @@ def calculate_work_split(config,records_per_file,data_dir,output_format,idrange,
             records_per_file=idrange[config['label']]['upper']-(start_id)+1
 
             filename=create_filename(data_dir,config['label'],i,output_format)
-            job=[i, filename, output_format, start_id, records_per_file, config['label'], config, idrange, generalconfig]
+            job=[i, type, filename, output_format, start_id, records_per_file, config['label'], config, idrange, generalconfig, cycle]
 
 
     work.append(job)
@@ -86,20 +87,15 @@ def calculate_work_split(config,records_per_file,data_dir,output_format,idrange,
 
     return work, filelist
 
-def node_pool(processes,work):
-    with Pool(processes) as nodePool:
-        nodePool.map(nodes, work)
-
-def rel_pool(processes,work):
-    with Pool(processes) as relPool:
-        relPool.map(rels, work)
+def work_pool(processes,work):
+    with Pool(processes) as work_pool:
+        work_pool.map(generate_data, work)
 
 def load_config(configuration):
-    global config
-    global idrange
     with open(configuration) as config_file:
         config = yaml.load(config_file, yaml.SafeLoader)
         config, idrange = validate_config(config)
+    return config, idrange
 
 def main():
 
@@ -108,7 +104,7 @@ def main():
 
     ## read YAML configuration
     configuration = sys.argv[1]
-    load_config(configuration)
+    config, idrange=load_config(configuration)
 
     ## Get general settings
     records_per_file=config['records_per_file']
@@ -132,47 +128,60 @@ def main():
     ## Generate Node files
     ##############################
 
-    logger.info("**NODE GENERATION**")
+    cycles=config['cycles']
+    work=[]
+    logger.info("**GENERATING %i SUBGRAPHS**",cycles)
+    for cycle in range(1,cycles+1):
 
-    for nodeconfig in config['nodes']:
+        if cycle > 1:
+            config,idrange=update_config_ids(config)
 
-        data_dir=create_output_dir(os.path.join(base_dir, nodeconfig['label']))
-        work, node_files=calculate_work_split(nodeconfig, records_per_file, data_dir, output_format, idrange, config)
-        #logger.debug(work)
+        #logger.info("**CYCLE %i**",cycle)
 
-        logger.info("Generating " + str(nodeconfig['no_to_generate']) + " " + nodeconfig['label'] + " in: " + str((len(work))) + " jobs")
-        node_generation_start=time.time()
-        node_pool(processes,work)
-        node_generation_end=time.time()
+        #logger.info(idrange)
 
-        if output_format != "parquet":
-            header_file=create_node_header(base_dir,nodeconfig,config['admin-import'])
-            import_node_config[nodeconfig['label']]=[header_file]+[data_dir+"/.*"] ## use node_files for all filenames
+        #logger.info("**PROCESSING NODE CONFIG**")
 
 
-    ##############################
-    ## Generate Relationship files
-    ##############################
+        for nodeconfig in config['nodes']:
 
-    logger.info("**RELATIONSHIP GENERATION**")
+            data_dir=create_output_dir(os.path.join(base_dir, nodeconfig['label']))
+            work, node_files=calculate_work_split(work,"node", nodeconfig, records_per_file, data_dir, output_format, idrange, config, cycle)
 
-    for relationshipconfig in config['relationships']:
+            logger.debug("Creating Config " + str(nodeconfig['no_to_generate']) + " " + nodeconfig['label'] + " in: " + str((len(work))) + " jobs")
 
-        data_dir=create_output_dir(os.path.join(base_dir, relationshipconfig['label']+"_"+relationshipconfig['source_node_label']+"_"+relationshipconfig['target_node_label']))
-        work, rel_files=calculate_work_split(relationshipconfig, records_per_file, data_dir, output_format, idrange, config)
+            if output_format != "parquet":
+                header_file=create_node_header(base_dir,nodeconfig,config['admin-import'])
+                import_node_config[nodeconfig['label']]=[header_file]+[data_dir+"/.*"] ## use node_files for all filenames
 
-        logger.info("Generating " + str(relationshipconfig['no_to_generate']) + " " + relationshipconfig['label'] + " relationships in: " + str((len(work))) + " jobs")
-        rel_start=time.time()
-        rel_pool(processes,work)
-        rel_end=time.time()
+        ##############################
+        ## Generate Relationship files
+        ##############################
 
-        if output_format != "parquet":
-            header_file=create_rel_header(base_dir,relationshipconfig)
-            relconfig=[header_file,data_dir+"/.*"]
-            if relationshipconfig['label'] in import_rel_config:
-                import_rel_config[relationshipconfig['label']].append(relconfig) ## rel_files for all filenames
-            else:
-                import_rel_config[relationshipconfig['label']]=[relconfig]
+        #logger.info("**PROCESSING RELATIONSHIP CONFIG**")
+
+        for relationshipconfig in config['relationships']:
+
+            data_dir=create_output_dir(os.path.join(base_dir, relationshipconfig['label']+"_"+relationshipconfig['source_node_label']+"_"+relationshipconfig['target_node_label']))
+            work, rel_files=calculate_work_split(work,"rel", relationshipconfig, records_per_file, data_dir, output_format, idrange, config, cycle)
+
+            logger.debug("Creating Config " + str(relationshipconfig['no_to_generate']) + " " + relationshipconfig['label'] + " relationships in: " + str((len(work))) + " jobs")
+
+            if output_format != "parquet" and cycle == 1:
+                header_file=create_rel_header(base_dir,relationshipconfig)
+                relconfig=[header_file,data_dir+"/.*"]
+                if relationshipconfig['label'] in import_rel_config:
+                    import_rel_config[relationshipconfig['label']].append(relconfig) ## rel_files for all filenames
+                else:
+                    import_rel_config[relationshipconfig['label']]=[relconfig]
+
+        ## now we have all the configs, can run them
+    logger.info("**DATA GENERATION**")
+    work_start=time.time()
+    work_pool(processes,work)
+    work_end=time.time()
+    logger.info("GENERATION FINISHED in " + str(round(work_end - work_start,2)) + " seconds")
+
 
     ##############################
     ## Generate Import script

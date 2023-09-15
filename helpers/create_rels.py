@@ -3,6 +3,7 @@ import time
 from helpers.general_helpers import *
 from helpers.admin_import import *
 from helpers.create_data import *
+from helpers.write_to_file import *
 
 logger=logging.getLogger(__name__)
 
@@ -20,7 +21,9 @@ def create_rel_header(data_dir, config):
     return filename
 
 
-def create_rel_data(process,filename, output_format, start_id, no_rels, label, config, nodeidrange, generalconfig):
+def create_rel_data(process,filename, output_format, start_id, no_rels, label, config, nodeidrange, generalconfig,cycle):
+
+    logger.debug("Starting Process: " + str(process) + ", generating: "+ str(no_rels) + " rels")
 
     df_row_limit=generalconfig['df_row_limit']
     df_chunk_no=1
@@ -29,7 +32,6 @@ def create_rel_data(process,filename, output_format, start_id, no_rels, label, c
     #logger.debug(id_chunks)
 
     inner_start=time.time()
-    rel_batch_generate_start=time.time()
 
     for chunk in id_chunks:
         df = []
@@ -59,16 +61,19 @@ def create_rel_data(process,filename, output_format, start_id, no_rels, label, c
             df = generate_random_ids(df,'targetid',config['target_node_label'],nodeidrange[config['target_node_label']]['lower'],nodeidrange[config['target_node_label']]['upper'],chunk[1]-chunk[0])
 
         if "properties" in config:
+            rel_batch_generate_start=time.time()
             df = batch_generate_properties(df,config['properties'])
+            rel_batch_generate_end=time.time()
+            logger.debug("node batch generation time: " + str(round(rel_batch_generate_end - rel_batch_generate_start,2)) + " seconds")
 
-        logger.debug(df.head())
+        #logger.debug(df.head())
         if 'id' in df:
             df.drop('id', axis=1, inplace=True)
-        logger.debug(df.head())
-        write_to_file(filename,output_format,df,df_chunk_no)
+        #logger.debug(df.head())
+        write_to_file(filename,output_format,df,df_chunk_no,cycle)
         df_chunk_no+=1
 
     inner_end=time.time()
-    logger.info("Process: " + str(process) + ", finished generating: "+ str(no_rels) + " rels in " + str(round(inner_end - inner_start,2)) + " seconds")
+    logger.debug("Finished Process: " + str(process) + ", generating: "+ str(no_rels) + " rels in " + str(round(inner_end - inner_start,2)) + " seconds")
 
     return filename
