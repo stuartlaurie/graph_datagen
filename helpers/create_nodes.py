@@ -2,6 +2,8 @@ from helpers.general_helpers import *
 from helpers.admin_import import *
 from helpers.create_data import *
 
+logger=logging.getLogger(__name__)
+
 def create_node_header(data_dir, config, admin_config):
     filename=data_dir+"/"+config['label']+"_Node_Headers.csv"
 
@@ -17,40 +19,39 @@ def create_node_header(data_dir, config, admin_config):
 
     return filename
 
-def create_node_data(filename, output_format, start_id, no_nodes, label, config, generalconfig):
+def create_node_data(process, filename, output_format, start_id, no_nodes, label, config, generalconfig):
 
-    data = []
     df_row_limit=generalconfig['df_row_limit']
     df_chunk_no=1
-    column_header=set_column_header(['START_ID'],config)
+    #column_header=set_column_header(['START_ID'],config)
+    id_chunks=get_id_chunks(start_id, (start_id+no_nodes), df_row_limit)
+    logger.debug(id_chunks)
 
-    ## generate node data
-    for i in range(start_id, start_id+no_nodes):
-        list = []
-        ## create node id
-        ## TODO: allow patterns for node IDs
-        list.append(label+str(i))
+    ## split into chunks based on df_row_limit
+    inner_start=time.time()
 
-        ## create additional labels as defined in config
+    for chunk in id_chunks:
+        df = []
+        id_batch_start=time.time()
+        ## generate sequential ids
+        logger.debug("Generating chunk: "+str(chunk[0])+" to " + str(chunk[1]))
+        df = generate_ids(df,'id',label,chunk[0],chunk[1])
+
         if "labels" in config:
-            list=generate_labels(list,config['labels'])
+            df=generate_labels(df,config['labels'])
 
-        ## create properties as defined by config
         if "properties" in config:
-            list=generate_properties(list,config['properties'])
+            df = batch_generate_properties(df,config['properties'])
 
-        data.append(list)
+        #logger.debug(df.head())
 
-        ## write data chunk to file if df rows exceed chunk size
-        if i % df_row_limit == 0:
-            df = batch_generate_properties(data,column_header,config['properties'])
-            write_to_file(filename,output_format,df,df_chunk_no)
-            df_chunk_no+=1
-            data=[]
-            df=[]
+        id_batch_end=time.time()
+        #logger.debug("id batch generate: " + str(round(id_batch_end - id_batch_start,2)) + " seconds")
 
-    ## write final data to file
-    df = batch_generate_properties(data,column_header,config['properties'])
-    write_to_file(filename,output_format,df,df_chunk_no)
+        write_to_file(filename,output_format,df,df_chunk_no)
+        df_chunk_no+=1
+
+    inner_end=time.time()
+    logger.info("Process: " + str(process) + ", finished generating: "+ str(no_nodes) + " nodes in " + str(round(inner_end - inner_start,2)) + " seconds")
 
     return filename

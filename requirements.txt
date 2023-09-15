@@ -4,3 +4,4 @@ faker
 fastparquet
 numpy
 pyarrow
+more_itertools

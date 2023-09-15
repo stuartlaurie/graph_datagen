@@ -19,7 +19,8 @@ def create_adminimport_command(base_dir,nodefiles,relfiles,config):
         loadCommand.write("  --nodes="+key+"=" + ','.join(value) + " \\\n")
 
     for key, value in relfiles.items():
-        loadCommand.write("  --relationships="+key+"=" + ','.join(value) + " \\\n")
+        for item in relfiles[key]:
+            loadCommand.write("  --relationships="+key+"=" + item[0]+','+item[1] + " \\\n")
 
     loadCommand.write(" " + config['database']+ " \n")
 

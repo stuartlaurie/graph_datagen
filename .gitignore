@@ -4,3 +4,5 @@ DATA*
 neo4j-enterprise*
 import.report
 customer*
+tests*
+*debug.log
