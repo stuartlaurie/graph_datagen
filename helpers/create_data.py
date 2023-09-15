@@ -44,6 +44,8 @@ def batch_generate_properties(df, properties):
         elif property['type'] == 'array':
             separator=";"
             df[property['name']]=[separator.join(str(e) for e in np.random.randint(low=property['lower'], high=property['upper'], size=property['size'])) for i in range(len(df))]
+        elif property['type'] == 'boolean':
+            df[property['name']] = np.random.choice(["true","false"], size=len(df))
         elif property['type'] == 'date':
             start_date, end_date=set_dates(property)
             df[property['name']]=[fake.date_between(start_date=start_date, end_date=end_date) for i in range(len(df))]
@@ -91,6 +93,8 @@ def generate_properties(row, properties):
             array=np.random.randint(low=property['lower'], high=property['upper'], size=property['size'])
             separator=";"
             row.append(separator.join(str(e) for e in array))
+        elif property['type'] == 'boolean':
+            row.append(np.random.choice(["true","false"]))            
         elif property['type'] == 'date':
             start_date, end_date=set_dates(property)
             row.append(fake.date_between(start_date=start_date, end_date=end_date))

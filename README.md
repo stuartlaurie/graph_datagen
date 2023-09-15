@@ -95,6 +95,10 @@ will generate random float between lower and upper values with no. decimal place
 * `upper`: [highest float]
 * `precision`: [no decimal places]
 
+**boolean**
+
+will randomly assign true/false
+
 **date**
 
 will generate random date between lower and upper values - split down to ymd to avoid pesky US/European dates
