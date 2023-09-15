@@ -1,10 +1,17 @@
 import pandas as pd
 import numpy as np
+import os
 import time
 import logging
 from fastparquet import write
 
 logger=logging.getLogger(__name__)
+
+def create_output_dir(data_dir):
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+        logger.debug("Creating output directory: " + data_dir)
+    return data_dir
 
 def write_to_file(filename,output_format,df,df_chunk,cycle):
 
@@ -27,5 +34,5 @@ def write_to_file(filename,output_format,df,df_chunk,cycle):
                 df.to_csv(filename, mode="a", index=False, header=False)
 
         batch_write_end=time.time()
-        logger.debug("Dataframe size: " + str(round(df.memory_usage(deep=True).sum()/(1024 * 1024 * 1024),4)) + " GB")
-        logger.debug("Batch write time: " + str(df_chunk) + " - " + str(round(batch_write_end - batch_write_start,2)) + " seconds")
+        #logger.debug("Dataframe size: " + str(round(df.memory_usage(deep=True).sum()/(1024 * 1024 * 1024),4)) + " GB")
+        #logger.debug("Batch write time: " + str(df_chunk) + " - " + str(round(batch_write_end - batch_write_start,2)) + " seconds")

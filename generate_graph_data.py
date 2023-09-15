@@ -6,7 +6,6 @@ from helpers.validate_config import *
 import sys
 import multiprocessing
 import yaml
-import os
 import time
 import logging
 
@@ -26,13 +25,6 @@ ch.setFormatter(formatter)
 # add the handlers to the logger
 logger.addHandler(fh)
 logger.addHandler(ch)
-
-def create_output_dir(data_dir):
-    logger=logging.getLogger('datagenerator')
-    logger.debug("Creating output directory: " + data_dir)
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
-    return data_dir
 
 def create_filename(data_dir,prefix,id,output_format):
     ## Create Data files
@@ -130,18 +122,21 @@ def main():
 
     cycles=config['cycles']
     work=[]
-    logger.info("**GENERATING %i SUBGRAPHS**",cycles)
+
+    logger.info("**PROCESSING CONFIG**")
+    logger.info("**CREATING CONFIG FOR %i SUBGRAPHS**",cycles)
     for cycle in range(1,cycles+1):
 
         if cycle > 1:
             config,idrange=update_config_ids(config)
 
-        #logger.info("**CYCLE %i**",cycle)
 
-        #logger.info(idrange)
 
-        #logger.info("**PROCESSING NODE CONFIG**")
+        ##############################
+        ## Process node config
+        ##############################
 
+        logger.debug("**PROCESSING RELATIONSHIP CONFIG**")
 
         for nodeconfig in config['nodes']:
 
@@ -155,10 +150,10 @@ def main():
                 import_node_config[nodeconfig['label']]=[header_file]+[data_dir+"/.*"] ## use node_files for all filenames
 
         ##############################
-        ## Generate Relationship files
+        ## Process Relationship config
         ##############################
 
-        #logger.info("**PROCESSING RELATIONSHIP CONFIG**")
+        logger.debug("**PROCESSING RELATIONSHIP CONFIG**")
 
         for relationshipconfig in config['relationships']:
 
@@ -175,7 +170,10 @@ def main():
                 else:
                     import_rel_config[relationshipconfig['label']]=[relconfig]
 
-        ## now we have all the configs, can run them
+    ##############################
+    ## Generate the data
+    ##############################
+
     logger.info("**DATA GENERATION**")
     work_start=time.time()
     work_pool(processes,work)

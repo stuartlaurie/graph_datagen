@@ -49,7 +49,7 @@ def create_node_data(process, filename, output_format, start_id, no_nodes, label
         #logger.debug(df.head())
 
         id_batch_end=time.time()
-        logger.debug("node batch generation time: " + str(round(id_batch_end - id_batch_start,2)) + " seconds")
+        #logger.debug("node batch generation time: " + str(round(id_batch_end - id_batch_start,2)) + " seconds")
 
         write_to_file(filename,output_format,df,df_chunk_no, cycle)
         df_chunk_no+=1

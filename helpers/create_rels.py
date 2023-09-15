@@ -64,7 +64,7 @@ def create_rel_data(process,filename, output_format, start_id, no_rels, label, c
             rel_batch_generate_start=time.time()
             df = batch_generate_properties(df,config['properties'])
             rel_batch_generate_end=time.time()
-            logger.debug("node batch generation time: " + str(round(rel_batch_generate_end - rel_batch_generate_start,2)) + " seconds")
+            #logger.debug("rel batch generation time: " + str(round(rel_batch_generate_end - rel_batch_generate_start,2)) + " seconds")
 
         #logger.debug(df.head())
         if 'id' in df:
