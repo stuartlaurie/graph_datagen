@@ -41,8 +41,9 @@ def generate_data(work_data):
         logger.debug("Not a recognized type, should be either node or rel")
         exit()
 
-def calculate_work_split(work, type,config,records_per_file,data_dir,output_format,idrange,generalconfig,cycle):
+def calculate_work_split(work, type, config,records_per_file,data_dir,output_format,idrange,generalconfig,cycle):
     ## config, records_per_file, data_dir, output_format
+    logger.debug("Creating Config for " + config['label'] + ", generating " + str(idrange[config['label']]['no_to_generate']) + ' records')
 
     i=0
     if "start_id" in config:
@@ -51,9 +52,9 @@ def calculate_work_split(work, type,config,records_per_file,data_dir,output_form
         start_id=1
     filelist=[]
 
-    if records_per_file >= config['no_to_generate']:
+    if records_per_file >= idrange[config['label']]['no_to_generate']:
         filename=create_filename(data_dir,config['label'],i,output_format)
-        job=[1, type, filename, output_format, start_id, config['no_to_generate'], config['label'], config, idrange, generalconfig, cycle]
+        job=[1, type, filename, output_format, start_id, idrange[config['label']]['no_to_generate'], config['label'], config, idrange, generalconfig, cycle]
     else:
         while start_id <= idrange[config['label']]['upper']:
             filename=create_filename(data_dir,config['label'],i,output_format)
@@ -128,22 +129,21 @@ def main():
     for cycle in range(1,cycles+1):
 
         if cycle > 1:
-            config,idrange=update_config_ids(config)
+            config,idrange=update_config_ids(config,idrange)
 
+        logger.debug(idrange)
 
 
         ##############################
         ## Process node config
         ##############################
 
-        logger.debug("**PROCESSING RELATIONSHIP CONFIG**")
+        logger.debug("**PROCESSING NODE CONFIG**")
 
         for nodeconfig in config['nodes']:
 
             data_dir=create_output_dir(os.path.join(base_dir, nodeconfig['label']))
             work, node_files=calculate_work_split(work,"node", nodeconfig, records_per_file, data_dir, output_format, idrange, config, cycle)
-
-            logger.debug("Creating Config " + str(nodeconfig['no_to_generate']) + " " + nodeconfig['label'] + " in: " + str((len(work))) + " jobs")
 
             if output_format != "parquet":
                 header_file=create_node_header(base_dir,nodeconfig,config['admin-import'])
@@ -159,8 +159,6 @@ def main():
 
             data_dir=create_output_dir(os.path.join(base_dir, relationshipconfig['label']+"_"+relationshipconfig['source_node_label']+"_"+relationshipconfig['target_node_label']))
             work, rel_files=calculate_work_split(work,"rel", relationshipconfig, records_per_file, data_dir, output_format, idrange, config, cycle)
-
-            logger.debug("Creating Config " + str(relationshipconfig['no_to_generate']) + " " + relationshipconfig['label'] + " relationships in: " + str((len(work))) + " jobs")
 
             if output_format != "parquet" and cycle == 1:
                 header_file=create_rel_header(base_dir,relationshipconfig)
