@@ -5,3 +5,4 @@ fastparquet
 numpy
 pyarrow
 more_itertools
+tqdm
