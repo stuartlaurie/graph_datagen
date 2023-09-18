@@ -8,6 +8,7 @@ import multiprocessing
 import yaml
 import time
 import logging
+import tqdm
 
 ## global logger
 logger = logging.getLogger()
@@ -43,7 +44,8 @@ def generate_data(work_data):
 
 def calculate_work_split(work, type, config,records_per_file,data_dir,output_format,idrange,generalconfig,cycle):
     ## config, records_per_file, data_dir, output_format
-    logger.debug("Creating Config for " + config['label'] + ", generating " + str(idrange[config['label']]['no_to_generate']) + ' records')
+    if cycle == 1:
+        logger.debug("Creating Config for " + config['label'] + ", generating " + str(idrange[config['label']]['no_to_generate']) + ' records')
 
     i=0
     if "start_id" in config:
@@ -52,12 +54,15 @@ def calculate_work_split(work, type, config,records_per_file,data_dir,output_for
         start_id=1
     filelist=[]
 
+    ## set filecount roughly based on no. generate, decent medium between tons of small files and slowdown accessing larger files
+    filecount=round(idrange[config['label']]['upper']/records_per_file)
+
     if records_per_file >= idrange[config['label']]['no_to_generate']:
-        filename=create_filename(data_dir,config['label'],i,output_format)
+        filename=create_filename(data_dir,config['label'],filecount,output_format)
         job=[1, type, filename, output_format, start_id, idrange[config['label']]['no_to_generate'], config['label'], config, idrange, generalconfig, cycle]
     else:
         while start_id <= idrange[config['label']]['upper']:
-            filename=create_filename(data_dir,config['label'],i,output_format)
+            filename=create_filename(data_dir,config['label'],filecount,output_format)
             job=[i, type, filename, output_format, start_id, records_per_file, config['label'], config, idrange, generalconfig, cycle]
             work.append(job)
             filelist.append(filename)
@@ -82,7 +87,8 @@ def calculate_work_split(work, type, config,records_per_file,data_dir,output_for
 
 def work_pool(processes,work):
     with Pool(processes) as work_pool:
-        work_pool.map(generate_data, work)
+        for _ in tqdm.tqdm(work_pool.imap(generate_data, work), total=len(work)):
+            pass
 
 def load_config(configuration):
     with open(configuration) as config_file:
@@ -126,19 +132,21 @@ def main():
 
     logger.info("**PROCESSING CONFIG**")
     logger.info("**CREATING CONFIG FOR %i SUBGRAPHS**",cycles)
-    for cycle in range(1,cycles+1):
+    for cycle in tqdm.tqdm(range(1,cycles+1),total=cycles):
 
         if cycle > 1:
+            ## recalculate ids per cycle
             config,idrange=update_config_ids(config,idrange)
 
-        logger.debug(idrange)
+        #logger.debug(idrange)
 
 
         ##############################
         ## Process node config
         ##############################
 
-        logger.debug("**PROCESSING NODE CONFIG**")
+        if cycle == 1:
+            logger.debug("**PROCESSING NODE CONFIG**")
 
         for nodeconfig in config['nodes']:
 
@@ -153,7 +161,8 @@ def main():
         ## Process Relationship config
         ##############################
 
-        logger.debug("**PROCESSING RELATIONSHIP CONFIG**")
+        if cycle == 1:
+            logger.debug("**PROCESSING RELATIONSHIP CONFIG**")
 
         for relationshipconfig in config['relationships']:
 

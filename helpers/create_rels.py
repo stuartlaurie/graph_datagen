@@ -23,7 +23,8 @@ def create_rel_header(data_dir, config):
 
 def create_rel_data(process,filename, output_format, start_id, no_rels, label, config, nodeidrange, generalconfig,cycle):
 
-    logger.debug("Starting Process: " + str(process) + ", generating: "+ str(no_rels) + " rels")
+    if cycle == 1:
+        logger.debug("Starting Process: " + str(process) + ", generating: "+ str(no_rels) + " rels")
 
     df_row_limit=generalconfig['df_row_limit']
     df_chunk_no=1
@@ -55,7 +56,7 @@ def create_rel_data(process,filename, output_format, start_id, no_rels, label, c
             df = pd.DataFrame(data, columns=column_header)
 
         else:
-            logger.debug("Generating chunk: "+str(chunk[0])+" to " + str(chunk[1]))
+            #logger.debug("Generating chunk: "+str(chunk[0])+" to " + str(chunk[1]))
             df = generate_ids(df,'id',label,chunk[0],chunk[1])
             df = generate_random_ids(df,'sourceid',config['source_node_label'],nodeidrange[config['source_node_label']]['lower'],nodeidrange[config['source_node_label']]['upper'],chunk[1]-chunk[0])
             df = generate_random_ids(df,'targetid',config['target_node_label'],nodeidrange[config['target_node_label']]['lower'],nodeidrange[config['target_node_label']]['upper'],chunk[1]-chunk[0])
@@ -74,6 +75,8 @@ def create_rel_data(process,filename, output_format, start_id, no_rels, label, c
         df_chunk_no+=1
 
     inner_end=time.time()
-    logger.debug("Finished Process: " + str(process) + ", generating: "+ str(no_rels) + " rels in " + str(round(inner_end - inner_start,2)) + " seconds")
+
+    if cycle == 1:
+        logger.debug("Finished Process: " + str(process) + ", generating: "+ str(no_rels) + " rels in " + str(round(inner_end - inner_start,2)) + " seconds")
 
     return filename

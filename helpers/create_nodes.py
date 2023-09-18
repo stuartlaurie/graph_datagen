@@ -22,7 +22,8 @@ def create_node_header(data_dir, config, admin_config):
 
 def create_node_data(process, filename, output_format, start_id, no_nodes, label, config, generalconfig, cycle):
 
-    logger.debug("Starting Process: " + str(process) + " generating: "+ str(no_nodes) + " nodes")
+    if cycle == 1:
+        logger.debug("Starting Process: " + str(process) + " generating: "+ str(no_nodes) + " nodes")
 
     df_row_limit=generalconfig['df_row_limit']
     df_chunk_no=1
@@ -55,6 +56,8 @@ def create_node_data(process, filename, output_format, start_id, no_nodes, label
         df_chunk_no+=1
 
     inner_end=time.time()
-    logger.debug("Finished Process: " + str(process) + ", generating: "+ str(no_nodes) + " nodes in " + str(round(inner_end - inner_start,2)) + " seconds")
+
+    if cycle == 1:
+        logger.debug("Finished Process: " + str(process) + ", generating: "+ str(no_nodes) + " nodes in " + str(round(inner_end - inner_start,2)) + " seconds")
 
     return filename
