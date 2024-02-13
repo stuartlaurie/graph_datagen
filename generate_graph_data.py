@@ -58,11 +58,11 @@ def calculate_work_split(work, type, config,records_per_file,data_dir,output_for
     filecount=round(idrange[config['label']]['upper']/records_per_file)
 
     if records_per_file >= idrange[config['label']]['no_to_generate']:
-        filename=create_filename(data_dir,config['label'],filecount,output_format)
+        filename=create_filename(data_dir,config['label'],i,output_format)
         job=[1, type, filename, output_format, start_id, idrange[config['label']]['no_to_generate'], config['label'], config, idrange, generalconfig, cycle]
     else:
         while start_id <= idrange[config['label']]['upper']:
-            filename=create_filename(data_dir,config['label'],filecount,output_format)
+            filename=create_filename(data_dir,config['label'],i,output_format)
             job=[i, type, filename, output_format, start_id, records_per_file, config['label'], config, idrange, generalconfig, cycle]
             work.append(job)
             filelist.append(filename)
