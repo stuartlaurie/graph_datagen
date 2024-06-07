@@ -48,6 +48,7 @@ Repeating section for each node to be generated, common settings
 * `label`: [label for node]
 * `no_to_generate`: [no. of nodes to generate] - supports both 1000000 and 1,000,000 formats
 * `start_id`: optional - give a start id that will be incremented on - useful when generating incremental sets e.g start numbering at this value (if not specified, numbering starts at 1)
+* `id_property_name`: [name for id property] if not present id column defaults to **id** if specified, id will be imported with this property name
 
 #### additional labels
 
