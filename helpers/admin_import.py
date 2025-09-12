@@ -9,7 +9,7 @@ def create_adminimport_command(base_dir,nodefiles,relfiles,config):
         loadCommand.write("echo \"DROP DATABASE "+ config['database'] + "\" | " + config['path'] + "cypher-shell -u " + config['neo4j']['username'] + " -p " + config['neo4j']['password'] + "\n")
 
     ## admin import command
-    loadCommand.write(config['path'] + config['cmd'] + " " +config['type'])
+    loadCommand.write(config['path'] + config['cmd'] + " " +config['type']+ " " + config['database'])
     loadCommand.write(" \\\n")
 
     for key, value in config['options'].items():
@@ -21,8 +21,6 @@ def create_adminimport_command(base_dir,nodefiles,relfiles,config):
     for key, value in relfiles.items():
         for item in relfiles[key]:
             loadCommand.write("  --relationships="+key+"=" + item[0]+','+item[1] + " \\\n")
-
-    loadCommand.write(" " + config['database']+ " \n")
 
     ## cypher to create/register database in neo4j
     if 'neo4j' in config.keys() and config['neo4j']['recreate_db'] == True:
