@@ -71,7 +71,7 @@ def create_schema(config):
 
 
 def create_constraint(label, property, schemafile):
-    cypher="\nCREATE CONSTRAINT "+ label+"Constraint"
+    cypher="\nCREATE CONSTRAINT "+ label+property+"Constraint"
     cypher+=" IF NOT EXISTS"
     cypher+="\nFOR (n:" + label+")"
     cypher+="\nREQUIRE n."+ property+" IS UNIQUE;\n"
@@ -80,7 +80,7 @@ def create_constraint(label, property, schemafile):
 def create_index(label, property, type, schemafile):
     if type not in ['RANGE', 'LOOKUP', 'POINT', 'TEXT', 'FULL-TEXT', 'VECTOR']:
         type='RANGE'
-    cypher="\nCREATE "+type+" INDEX "+ label+"Index"
+    cypher="\nCREATE "+type+" INDEX "+ label+property+"Index"
     cypher+=" IF NOT EXISTS"
     cypher+="\nFOR (n:" + label+")"
     cypher+="\nON n."+ property+";\n"
