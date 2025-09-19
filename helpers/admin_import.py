@@ -78,6 +78,8 @@ def create_constraint(label, property, schemafile):
     schemafile.write(cypher)
 
 def create_index(label, property, type, schemafile):
+    if type not in ['RANGE', 'LOOKUP', 'POINT', 'TEXT', 'FULL-TEXT', 'VECTOR']:
+        type='RANGE'
     cypher="\nCREATE "+type+" INDEX "+ label+"Index"
     cypher+=" IF NOT EXISTS"
     cypher+="\nFOR (n:" + label+")"

@@ -103,35 +103,22 @@ will randomly assign true/false
 
 **date**
 
-will generate random date between lower and upper values - split down to ymd to avoid pesky US/European dates
+will generate random date between lower and upper values 
 
 * `lower`:
-    * `year`: 2022
-    * `month`: 1
-    * `day`: 1
+    * `date`: 2022-01-01
 * `upper`:
-    * `year`: 2023
-    * `month`: 1
-    * `day`: 1
+    * `date`: 2023-01-01
+ 
 
 **datetime/epoch**
 
-will generate random datetime between lower and upper values - split down to ymd to avoid pesky US/European dates - can be output either as datetime string (default) or if using epoch use `output_type: int`
+will generate random datetime between lower and upper values  - can be output either as datetime string (default) or if using epoch use `output_type: int`
 
 * `lower`:
-    * `year`: 2022
-    * `month`: 1
-    * `day`: 1
-    * `hour`: 1
-    * `second`: 1
-    * `minute`: 1        
+    * `date`: 2023-01-01 02:10:12      
 * `upper`:
-    * `year`: 2023
-    * `month`: 1
-    * `day`: 1
-    * `hour`: 1
-    * `second`: 1
-    * `minute`: 1        
+    * `date`: 2023-01-01 12:01:12      
 
 **list**
 

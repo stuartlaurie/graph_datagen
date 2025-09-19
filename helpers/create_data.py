@@ -1,7 +1,7 @@
-import datetime
 import numpy as np
 import pandas as pd
 import logging
+from datetime import datetime
 from faker import Faker
 fake = Faker()
 
@@ -23,8 +23,15 @@ def generate_random_id(df,label,lower,upper):
     return id
 
 def set_dates(property):
-    start_date=datetime.datetime(year=property['lower']['year'], month=property['lower']['month'], day=property['lower']['day'])
-    end_date=datetime.datetime(year=property['upper']['year'], month=property['upper']['month'], day=property['upper']['day'])
+    format_string = "%Y-%m-%d %H:%M:%S"
+    if 'date' in property['lower']:
+        start_date = property['lower']['date']
+    if 'date' in property['upper']:
+        end_date = property['upper']['date']
+    else:
+        start_date=datetime(year=property['lower']['year'], month=property['lower']['month'], day=property['lower']['day'])
+        end_date=datetime(year=property['upper']['year'], month=property['upper']['month'], day=property['upper']['day'])
+
     return start_date, end_date
 
 def batch_generate_properties(df, properties):
