@@ -175,12 +175,17 @@ def main():
                 import_rel_config[relationshipconfig['label']]=[relconfig]
 
     ##############################
+    ## Generate Schema file
+    ##############################
+
+    create_schema(config)
+
+    ##############################
     ## Generate Import script
     ##############################
 
-    if output_format != "parquet":
-        create_adminimport_command(base_dir,import_node_config,import_rel_config,config['admin-import'])
-        warn_about_incremental_constraint(config)
+    create_adminimport_command(base_dir,import_node_config,import_rel_config,config['admin-import'], config['schema_file'])
+
 
     total_end=time.time()
 

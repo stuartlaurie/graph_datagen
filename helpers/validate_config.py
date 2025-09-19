@@ -85,5 +85,8 @@ def validate_config(config):
         config['relationships'][i]=relationshipconfig
 
         i+=1
+    
+    ## admin-import validation
+    config['schema_file']=config['output_dir']+"/Neo4jSchema.cypher"
 
     return config, idrange

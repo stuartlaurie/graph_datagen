@@ -80,6 +80,7 @@ Each node/relationship block can have repeating properties section, properties c
 * `name`: [name of property]
 * `type`: [type of property] - each type has it's own set of configuration/behavior
 * `output_type`: [data type to be used in admin-import header] - used when generating e.g. email as while we want an email to be generated, the type for admin-import is string. Also applies to lists where its random selection of a value.
+* `index`: [type of index from RANGE, LOOKUP, POINT, TEXT, FULL-TEXT, VECTOR] - creates the index to be applied in the --schema option when using neo4j-admin import
 
 **int**
 

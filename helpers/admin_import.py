@@ -1,6 +1,6 @@
 import csv
 
-def create_adminimport_command(base_dir,nodefiles,relfiles,config):
+def create_adminimport_command(base_dir,nodefiles,relfiles,config, schema_file):
     ## create a sh script that will run admin-import and any other cypher
     loadCommand=open(base_dir+'/importCommand.sh', 'w', newline='')
 
@@ -21,6 +21,8 @@ def create_adminimport_command(base_dir,nodefiles,relfiles,config):
     for key, value in relfiles.items():
         for item in relfiles[key]:
             loadCommand.write("  --relationships="+key+"=" + item[0]+','+item[1] + " \\\n")
+
+    loadCommand.write("  --schema="+schema_file+"\\\n")
 
     ## cypher to create/register database in neo4j
     if 'neo4j' in config.keys() and config['neo4j']['recreate_db'] == True:
@@ -52,17 +54,32 @@ def write_import_header(filename,header,config):
     return filename
 
 
-def warn_about_incremental_constraint(config):
-    ## when running incremental need to make sure constraints are set
-    ## this generates the cypher to use
-    if config['admin-import']['type'] == "incremental":
+def create_schema(config):
+    
+    filename=config['schema_file']
+    print ("Cypher for schema written to: "+filename)
+    
+    ## create constraints for node IDs
+    with open(filename, 'w') as schemafile:
+        for nodeconfig in config['nodes']:
+            create_constraint(nodeconfig['label'], nodeconfig['id_property_name'], schemafile)
+                        
+            if 'properties' in nodeconfig:
+                for propertyconfig in nodeconfig['properties']:
+                    if 'index' in propertyconfig:
+                        create_index(nodeconfig['label'], propertyconfig['name'], propertyconfig['index'], schemafile)
 
-        filename=config['output_dir']+"/Neo4jConstraints.cypher"
-        print ("WARNING: Don't forget you'll need constraints for incremental to work !!!")
-        print ("Cypher for constraints written to: "+filename)
 
-        with open(filename, 'w') as constraintsfile:
-            for nodeconfig in config['nodes']:
-                print ("\nCREATE CONSTRAINT "+ nodeconfig['label']+"Constraint", file=constraintsfile)
-                print ("FOR (n:" + nodeconfig['label']+")", file=constraintsfile)
-                print ("REQUIRE n."+ nodeconfig['id_property_name']+" IS UNIQUE;\n", file=constraintsfile)
+def create_constraint(label, property, schemafile):
+    cypher="\nCREATE CONSTRAINT "+ label+"Constraint"
+    cypher+=" IF NOT EXISTS"
+    cypher+="\nFOR (n:" + label+")"
+    cypher+="\nREQUIRE n."+ property+" IS UNIQUE;\n"
+    schemafile.write(cypher)
+
+def create_index(label, property, type, schemafile):
+    cypher="\nCREATE "+type+" INDEX "+ label+"Index"
+    cypher+=" IF NOT EXISTS"
+    cypher+="\nFOR (n:" + label+")"
+    cypher+="\nON n."+ property+";\n"
+    schemafile.write(cypher)
